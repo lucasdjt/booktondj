@@ -26,10 +26,29 @@
 - User peut supprimer le booking qu'il a réalisé pour un DJ
 - DJ peut recevoir plusieurs bookings de différents users
 - Toutes les actions qu'un User peut faire, les rôles supérieurs peut le faire
+- DJ peut choisir les options qu'il veut pour son booking, et les voirs
+- DJ peut voir les dates et horaires où il est disponible
+- DJ peut changer les dates et horaires où il est disponible
+- DJ peut ajouter des dates et horaires où il est indisponible avec un motif visible ou non
+- DJ peut voir les informations du booking
+- DJ peut renvoyer le booking en demander des informations
+- L'user reçoit des notifs selon ces bookings etc...
+- L'user peut voir les dates et horaires où le DJ est disponible (sans MOTIF privés)
 
 #### PARAMETRES GENERIQUES
 
--
+- un DJ peut être en VALIDATION AUTOMATIQUE par OPTIONS des bookings
+- un DJ peut demander un CACHET MINIMUM (Public/Privé)
+- un DJ peut choisir les HORAIRES ET DATES où il est disponible
+- un DJ peut émettre des HORAIRES ET DATES où il est indisponible avec un MOTIF (Public/Privé)
+- un DJ peut demander une INSTALLATION TECHNIQUE minimum [Equipement, Platines, Backline, Sono, Régisseur, MC]
+- un DJ peut demander une ZONE DE LOCALISATION MAXIMUM (Public/Privé)
+- un DJ peut demander le TYPE D'EVENEMENTS [Soirée Bar-Boîte, Festival Outdoor, Festival Indoor, Private Party] (Public/Privé)
+- un DJ peut demander le NB DE PRSN DE L'EVENEMENT (Public/Privé)
+- un DJ peut demander les NOMS DES AUTRES DJs bookées ou en demande
+- un DJ peut rajouter une NOTE à un booking qu'il renvoie
+- un BOOKING peut se faire REFUSER AUTOMATIQUEMENT par les OPTIONS
+- un BOOKING peut se faire VALIDER AUTOMATIQUEMENT par les OPTIONS
 
 #### SQL-MCD
 
@@ -38,15 +57,14 @@
 - USER peut supprimer un BOOKING ou plusieurs BOOKING pour un DJ ou plusieurs DJ
 - DJ peut avoir plusieurs BOOKINGS de différents USER
 - DJ/MANAGER/ORGANISATION/ADMINS ont les actions de USER
+- Les OPT_DE_BOOKINGS, PLANNING sont crées automatiquement pour chaque DJ
+- USER peut voir les OPT_DE_BOOKINGS_PUBLIC d'un DJ
+- DJ peut modifier ses OPT_DE_BOOKINGS
+- DJ peut modifier son PLANNING
+- DJ peut modifier les DATES_INDISPO
+- DJ peut modifier le BOOKING (créer un dupli) et le renvoyer à USER
 
-
-
-#### AVANT
-- Un DJ peut mettre des conditions sur les demandes de booking (Cachet minimum/Horaires et Dates/Installation technique [backline, sono, régisseur]/Lieu/Types d'événements [concert/showcase/festival/privé avec infos sur l'événements nombre de prsn/autres djs/matériels...])
-- Les DJs peuvent demander des modifications sur les bookings pour valider
-- Les bookings peuvent se faire refuser automatiquement avec les conditions, ou être automatiquement validée
-- Un utilisateur peuvent voir le planning des DJs (sans les informations privées)
-- Un DJ peut voir son planning et le planning des autres DJs (sans les informations privées)
+### 1. AVANT
 - Un DJ ne peut être réserver un nombre x de fois sur une même journée
 - Un DJ ne peut être réserver sur plusieurs endroits si la distance de ces endroits est trop court.
 - Le site se concentre sur le booking des DJs
