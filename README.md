@@ -155,6 +155,39 @@ FONCTIONNALITE
 - Support litige : chat admin disponible pour gérer les conflits.
 
 ### 2. Réfléchir aux paramètres génériques qui seront utilisés
+
+- Durée minimale et maximal d'un booking
+- Délai d'annulation d'une réservation (Pour DJ ou User)
+- Un DJ Max Booking (nb de booking maximal pour un DJ sur une certaine durée)
+- Durée de repos entre des bookings
+- Calendrier avec jours fériés comptés et horaires adaptif pour un dj basique
+- Commission prise par l'agence
+- Majoration de booking urgent ou jour férié
+- Acompte à payer minimum
+- Caution obligatoire
+- Trajet max autorisé
+- Temps de préparation
+- Localisation
+- Mode Discret
+- A2F
+- Limite d'âge
+- Compte certifié
+- Les différents paramètres du site (Langues, Interface...)
+- Les différents paramètres du booking
+- Niveau de modération d'un compte (User, Modérateur, Artistes...)
+- Paramètres de Notifications
+- Validation automatique
+- Cachet minimal
+- Liste d'installations techniques
+- Liste de types d'événéments
+- Liste d'avis d'un artiste
+- Informations de profil
+- Paramètres de Chats textuels
+- Vérification des comptes (Sécurité, A2F etc...)
+- Tableau de bord
+- RGPD
+...
+
 ### 3. Proposer un modèle conceptuel de données adapté (Power AMC ? ?)
 ### 4. Créer les tables correspondantes (et conserver le script)
 ### 5. Remplir de quelques données d’exemples pertinents (et conserver le script)
@@ -163,3 +196,4 @@ FONCTIONNALITE
 — Créneaux libres dans le mois ?
 — Personnes impliquées dans le créneau ?
 — etc ...
+
