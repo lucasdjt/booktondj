@@ -4,110 +4,88 @@
 - * nom [StrLim]
 - * prenom [StrLim]
 - * email [StrLim]
-- * tel [StrLim]
-- * role [User/Admin/Manager/Artist]
-- * verified [Yes/No]
+- * role [Enum : User/Admin/Manager/Artist]
+- * verified [Boolean]
 - * date_creation [Date]
-- * notification [None/Email/Tel]
-- * popularity [Int (Ici le + de followers sur l'un de ses réseaux par exemple)]
+- tel [StrLim]
+- notification [Enum : Email/Tel]
+- popularity [Int (Ici le + de followers sur l'un de ses réseaux par exemple)]
 - description [Str]
-? a2f
 
 # ARTIST
 **aid**
 ***user_id*** (uid)
-***manager_id*** (uid)
 - * genre [Str]
-- * validation_automatique [Yes/No]
-- * min_fee_per_minute [0 = None]
-- * is_fee_private [Yes/No]
-- * zone_km_max [0 = None]
-- * min_participants [0 = None]
-- * number_max_reservations [0 = No Limit]
-- * number_of_reservations_this_week
-- * is_artist_mineur [Yes/No]
-- * max_hours_playings [Int]
+- * validation_automatique [Boolean]
+- * is_fee_private [Boolean]
+- * is_artist_mineur [Boolean]
 - * rest_hours_needed_after_booking [Int]
-? private
-? need_technic
+- * max_hours_playings [Int]
+***manager_id*** (uid) (OPTIONNEL)
+- min_fee_per_minute [Int]
+- zone_km_max [Int]
+- min_participants [Int]
+- number_max_reservations [Int]
 
 # PLANNING
 **pid**
 ***artist_id*** (aid)
+***localisation_id*** (lid)
 - * start_date [Date]
 - * end_date [Date]
-- * is_valid [Yes/No]
-- * artist_occuped [Yes/No]
+- * artist_occuped [Boolean]
 - fee_special_per_minute [Double]
 - note [Str]
-- is_note_public [Yes/No]
+- is_note_public [Boolean]
 
 # BOOKING
 **bid**
 ***booker_id*** (uid)
 ***artist_id*** (aid)
 ***date_booking_id*** (pid)
-- * status [En attente/Confirmé/Confirmé sans total paiement/Rejeté/Renvoyé/Cancel] 
+- * status [Enum : En attente/Confirmé/Confirmé sans total paiement/Rejeté/Renvoyé par l'artiste/Cancel] 
 - * date_created [Date]
 - * date_updated [Date]
 - * number_of_participants [Int]
+- * annulation_delay [Date]
+- * with_technicals_DJ [Boolean]
+- * deposit_amount_fee [Int]
+- * amount_fee_required [Int]
 - note_with_the_booking [Str]
 - list_of_DJs [Str]
-- * annulation_delay [Date]
 - remboursement_annulation [Double]
-- date_revelation_booking [Date, Vide = Public]
-- * with_technicals_DJ [Yes/No]
-- * deposit_amount_fee
-- * amount_fee_required
-? public_note
-? private_note
-? total_fee
-? deposit_amount
-? payment_status
-? policy_status
-
-# REQUIREMENT
-**rid**
-- * name_requirement [StrLim]
-- description [Str]
-
-# NECCESITY
-**nid**
-***artist_id*** (aid)
-***object_id*** (rid)
-? quantity
-? notes
+- date_revelation_booking [Date]
 
 # LOCALISATION
 **lid**
 - * name [StrLim]
-- address [Str]
+- * type_localisation [Enum : Salle/Extérieur/Festival/Others]
+- * address [Str]
 - latitude [Double]
 - longitude [Double]
-- capacity_people [Int]
-? contact
 
 # BLACKLIST
 **banid**
 ***artist_id*** (aid)
-- * type_blacklisted [Event/Artists/Lieu/Organisations...]
-- reason_note [Str]
-? name_of_the_blacklisted
-? id_of_the_blacklisted
+- * type_blacklisted [Enum : Event/Artists/Lieu/Organisations/Others]
+- * reason_note [Str]
+- * id_of_the_blacklisted [Str]
+- * date_blacklist [Date]
+- end_date_blacklist [Date]
 
 # AVIS
 ***user_avis_id*** (uid)
 ***user_cibled_id*** (uid)
 - * note [Int between 0 and 10]
+- * public_avis [Boolean]
+- * date_created [Date]
 - reason_avis [Str]
-- * public_avis [Yes/No]
 
 # MESSAGE
 ***user_recever_id*** (uid)
 ***user_sender_id*** (uid)
 - * Message [Str]
 - * Date_created [Date]
-? Pièces jointes
 
 # LOGS
 **logid**
