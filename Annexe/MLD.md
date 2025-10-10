@@ -31,14 +31,13 @@
 
 ## PLANNING
 **pid**
-***bid***
 ***aid***
 - * start_date [Date]
 - * end_date [Date]
 - * is_occupied [Boolean]
+- * is_note_public [Boolean] (dépend de `note`)
 - special_fee [Double] (> Null = Pas de fee special pour cette date (Jour férié = fee special par exemple))
 - planning_note [Str] (> Null = Pas de note sur cette date)
-- is_note_public [Boolean] (dépend de `note`)
 
 ## BOOKING
 **bid**
@@ -46,14 +45,14 @@
 ***aid***
 ***pid***
 ***lid***
-- * status [Enum : En attente/Confirmé/Confirmé sans total paiement/Rejeté/Renvoyé par l'artiste/Cancel] 
+- * status [Enum : En attente/Confirmé/Confirmé sans total paiement/Rejeté/Renvoyé/Cancel] 
 - * created_date [Date]
 - * updated_date [Date]
 - * nb_participants [Int]
 - * annulation_delay [Date]
 - * include_technicals [Boolean]
-- * actual_amount [Int]
-- * amount_required [Int]
+- * actual_amount [Double]
+- * amount_required [Double]
 - booking_note [Str] (> Null = Pas de note sur ce booking)
 - dj_list [Str] (> Null = Pas de liste DJ données)
 - amount_cancel [Double] (> Null = Pas de montant requis à donner en cas d'annulation)
@@ -62,7 +61,7 @@
 ## LOCALISATION
 **lid**
 - * name [StrLim]
-- * localisation_type [Enum : Salle/Extérieur/Festival/Others]
+- * localisation_type [Enum : Salle/Extérieur/Bar/Boîte/Festival/Others]
 - * address [Str]
 - latitude [Double] (> Null = Pas de latitude donnée )
 - longitude [Double] (> Null = Pas de longitude donnée )
@@ -101,7 +100,7 @@
 # MLD
 
 User(**uid**,pseudo,nom,prenom,email,role,verified,creation_date,tel,notif,popularity,description)
-Artist(**aid**,genre,valid_auto,if_fee_prv,is_minor,rest_hours_needed,max_hours_playings,min_fee,km_max,min_participants,max_reservations,*user_id*,*manager_id*)
+Artist(**aid**,genre,valid_auto,is_fee_prv,is_minor,rest_hours_needed,max_hours_playings,min_fee,km_max,min_participants,max_reservations,*user_id*,*manager_id*)
 Planning(**pid**,start_date,end_date,is_occupied,special_fee,planning_note,is_note_public,*aid*,*bid*)
 Localisation(**lid**,name,localisation_type,address,latitude,longitude)
 Booking(**bid**,status,created_date,updated_date,nb_participants,annulation_delay,include_technicals,actual_amount,amount_required,booking_note,dj_list,amount_cancel,public_reveal_date,*uid*,*aid*,*pid*,*lid*)
