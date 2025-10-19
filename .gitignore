@@ -1,1 +1,11 @@
-psql.sh
+*.class
+
+target/
+
+*.zip
+*.tar.gz
+
+.idea
+.vscode/
+
+prop.properties
