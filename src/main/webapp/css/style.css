@@ -51,10 +51,37 @@ body {
     vertical-align: middle;
 }
 
+.empty {
+    background: #eaeaea;
+}
+
+.slot {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    text-decoration: none;
+    color: #333;
+    padding: 6px;
+}
+
+.date {
+    font-size: 12px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.count {
+    font-size: 20px;
+    text-align: center;
+    margin-top: 10px;
+}
+
 .day {
     background: #ffffff;
 }
 
-.empty {
-    background: #eaeaea;
+.day:hover {
+    background: #e3f1ff;
+    cursor: pointer;
 }

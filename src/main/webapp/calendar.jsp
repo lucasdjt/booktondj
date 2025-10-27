@@ -1,7 +1,9 @@
 <%@ page import="java.time.*" %>
+<%@ page import="java.util.Map" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
-
 <%
+    Map<Integer,Integer> counters = (Map<Integer,Integer>) request.getAttribute("counters");
+
     int month = (int) request.getAttribute("month");
     int year = (int) request.getAttribute("year");
     int nbDays = (int) request.getAttribute("nbDays");
@@ -41,7 +43,15 @@
                             started = true;
                         }
                         if (started && currentDay <= nbDays) {
-                            out.print("<td class='day'>" + currentDay + "</td>");
+                            String link = "calendar?month=" + month + "&year=" + year 
+                            + "&clickedDate=" + year + "-" 
+                            + String.format("%02d", month) + "-" 
+                            + String.format("%02d", currentDay);
+                            out.print("<td class='day'>");
+                            out.print("<a class='slot' href='" + link + "'>");
+                            out.print("<div class='date'>" + currentDay + "</div>");
+                            out.print("<div class='count'>" + counters.get(currentDay) + "</div>");
+                            out.print("</a></td>");
                             currentDay++;
                         } else {
                             out.print("<td class='empty'></td>");
