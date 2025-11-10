@@ -1,4 +1,4 @@
-package fr.but3;
+package fr.but3.service;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -6,6 +6,7 @@ import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.but3.dao.DayClickDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;

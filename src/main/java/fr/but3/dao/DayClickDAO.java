@@ -1,4 +1,4 @@
-package fr.but3;
+package fr.but3.dao;
 
 import java.io.InputStream;
 import java.sql.*;
