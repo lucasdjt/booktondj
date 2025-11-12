@@ -1,79 +1,67 @@
 # MLD dans notre format
 
-## USER
+## USERS
 **uid**
 - * pseudo [StrLim]
 - * nom [StrLim]
-- * prenom [StrLim]
+- * surname [StrLim]
 - * email [StrLim]
-- * role [Enum : User/Admin/Manager/Artist]
+- * role [Enum : User/Admin/Ressource]
 - * verified [Boolean]
 - * creation_date [Date]
 - tel [StrLim] (> Null = Pas de tel)
 - notif [Enum : Email/Tel] (> Null = Pas de Notif)
-- popularity [Int] (> Null = Pas de données envoyés sur la popularité (Nb max de followers sur un réseau))
 - description [Str] (> Null = Pas de Description)
 
-## ARTIST
-**aid**
-***user_id*** (uid)
-***manager_id*** (uid) (> Null = Pas de Manager)
-- * genre [Str]
-- * valid_auto [Boolean]
-- * is_fee_prv [Boolean]
-- * is_minor [Boolean]
-- * rest_hours_needed [Int]
-- * max_hours_playings [Int]
-- min_fee [Int] (> Null = Pas de coûts minimal)
-- km_max [Int] (> Null = Pas de distances max)
-- min_participants [Int] (> Null = Pas de participants requis sur une scène minimum)
-- max_reservations [Int] (> Null = Pas de réservations max par SEMAINE)
+## LOCALISATIONS
+**lid**
+- * name [StrLim]
+- * type [StrLim]
+- * address [Str]
 
-## PLANNING
+## SERVICES
+**sid**
+***uid*** (uid)
+*lid* 
+- * name [StrLim]
+- * type [StrLim]
+- * capacity [Int]
+- description [Str]
+- is_active [Boolean]
+- price [Double]
+
+## PLANNINGS
 **pid**
-***aid***
+***sid***
 - * start_date [Date]
 - * end_date [Date]
-- * is_occupied [Boolean]
+- * is_available [Boolean]
 - * is_note_public [Boolean] (dépend de `note`)
-- special_fee [Double] (> Null = Pas de fee special pour cette date (Jour férié = fee special par exemple))
 - planning_note [Str] (> Null = Pas de note sur cette date)
+- special_price [Double] (> Null = Pas de fee special pour cette date (Jour férié = fee special par exemple))
 
-## BOOKING
+## BOOKINGS
 **bid**
 ***uid***
-***aid***
+***sid***
 ***pid***
-***lid***
-- * status [Enum : En attente/Confirmé/Confirmé sans total paiement/Rejeté/Renvoyé/Cancel] 
+*lid*
+- * status [Enum : Completed/Pending/Rejected/Cancelled] 
 - * created_date [Date]
 - * updated_date [Date]
 - * nb_participants [Int]
-- * annulation_delay [Date]
-- * include_technicals [Boolean]
-- * actual_amount [Double]
+- * amount [Double]
 - * amount_required [Double]
-- booking_note [Str] (> Null = Pas de note sur ce booking)
-- dj_list [Str] (> Null = Pas de liste DJ données)
-- amount_cancel [Double] (> Null = Pas de montant requis à donner en cas d'annulation)
-- public_reveal_date [Date] (> Null = Booking mis en public)
+- note [Str] (> Null = Pas de note sur ce booking)
 
-## LOCALISATION
-**lid**
-- * name [StrLim]
-- * localisation_type [Enum : Salle/Extérieur/Bar/Boîte/Festival/Others]
-- * address [Str]
-- latitude [Double] (> Null = Pas de latitude donnée )
-- longitude [Double] (> Null = Pas de longitude donnée )
-
-## BLACKLIST
+## BLACKLISTS
 **ban_id**
-***aid***
-- * blacklist_type [Enum : Event/Artists/Lieu/Organisations/Others]
-- * blacklist_ reason [Str]
-- * blacklist_name [Str]
-- * blacklist_date [Date]
-- end_date_blacklist [Date] (> Null = Blacklist permanent )
+***sid***
+- * type [Enum : Users/Localisations/Others]
+- * reason [Str]
+- * identifier [Str]
+- * ban_date [Date]
+- end_date [Date] (> Null = Blacklist permanent )
 
 ## LOGS
 **log_id**
@@ -90,7 +78,7 @@
 - * posted_date [Date]
 - reason [Str] (> Null = Pas de raison donnée)
 
-## MESSAGE
+## MESSAGES
 **mid**
 ***sender_id*** (uid)
 ***receiver_id*** (uid)
@@ -99,12 +87,12 @@
 
 # MLD
 
-User(**uid**,pseudo,nom,prenom,email,role,verified,creation_date,tel,notif,popularity,description)
-Artist(**aid**,genre,valid_auto,is_fee_prv,is_minor,rest_hours_needed,max_hours_playings,min_fee,km_max,min_participants,max_reservations,*user_id*,*manager_id*)
-Planning(**pid**,start_date,end_date,is_occupied,special_fee,planning_note,is_note_public,*aid*,*bid*)
-Localisation(**lid**,name,localisation_type,address,latitude,longitude)
-Booking(**bid**,status,created_date,updated_date,nb_participants,annulation_delay,include_technicals,actual_amount,amount_required,booking_note,dj_list,amount_cancel,public_reveal_date,*uid*,*aid*,*pid*,*lid*)
-Blacklist(**ban_id**,blacklist_type,blacklist_reason,blacklist_name,blacklist_date,end_date_blacklist,*artist_id*)
+Users(**uid**,pseudo,name,surname,email,role,verified,creation_date,tel,notif,description)
+Localisations(**lid**,name,type,address)
+Services(**sid**,name,type,capacity,description,is_active,price,*uid*,*lid*)
+Plannings(**pid**,start_date,end_date,is_available,is_note_public,planning_note,special_price,*sid*)
+Bookings(**bid**,status,created_date,updated_date,nb_participants,amount,amount_required,note,*uid*,*sid*,*pid*,*lid*)
+Blacklists(**ban_id**,type,reason,identifier,ban_date,end_date,*sid*)
 Logs(**log_id**,action_name,log_date,log_description,*uid*)
-Message(**mid**,message,sent_date,*sender_id*,*receiver_id*)
+Messages(**mid**,message,sent_date,*sender_id*,*receiver_id*)
 Avis(***reviewer_id,evaluated_id***,score,is_public,posted_date,reason)
