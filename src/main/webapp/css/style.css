@@ -85,3 +85,21 @@ body {
     background: #e3f1ff;
     cursor: pointer;
 }
+
+.slots {
+    list-style: none;
+    padding: 0;
+}
+.slot-active {
+    padding: 10px;
+    background: #c8ffc8;
+    margin-bottom: 5px;
+    border-radius: 6px;
+}
+.slot-disabled {
+    padding: 10px;
+    background: #e0e0e0;
+    color: #777;
+    margin-bottom: 5px;
+    border-radius: 6px;
+}

@@ -43,8 +43,7 @@
                             started = true;
                         }
                         if (started && currentDay <= nbDays) {
-                            String link = "calendar?month=" + month + "&year=" + year 
-                            + "&clickedDate=" + year + "-" 
+                            String link = "day?date=" + year + "-" 
                             + String.format("%02d", month) + "-" 
                             + String.format("%02d", currentDay);
                             out.print("<td class='day'>");

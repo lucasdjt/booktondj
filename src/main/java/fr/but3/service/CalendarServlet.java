@@ -41,7 +41,7 @@ public class CalendarServlet extends HttpServlet {
         req.setAttribute("nbDays", yearMonth.lengthOfMonth());
         req.setAttribute("firstDay", yearMonth.atDay(1).getDayOfWeek().getValue());
         req.setAttribute("counters", counters);
-        
-        req.getRequestDispatcher("/calendar.jsp").forward(req, res);
+
+        req.getRequestDispatcher("/WEB-INF/views/calendar.jsp").forward(req, res);
     }
 }
