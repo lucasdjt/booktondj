@@ -1,0 +1,23 @@
+<%@ page import="fr.but3.utils.Config" %>
+<%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
+
+<%
+    String siteTitre = Config.get("site.titre");
+    String siteLogo = Config.get("site.logo");
+    String couleur1 = Config.get("site.couleur_principal");
+    String couleur2 = Config.get("site.couleur_secondaire");
+%>
+
+<div class="w-full py-4 px-6 mb-6 shadow flex items-center justify-between" 
+     style="background-color: <%= couleur1 %>; color: <%= couleur2 %>">
+
+    <div class="flex items-center gap-4">
+        <img src="img/<%= siteLogo %>" alt="logo" class="h-12 rounded">
+        <h1 class="text-xl font-bold"><%= siteTitre %></h1>
+    </div>
+
+    <div class="flex gap-4">
+        <a href="calendar" class="font-semibold hover:underline" 
+           style="color:<%= couleur2 %>">Calendrier</a>
+    </div>
+</div>
