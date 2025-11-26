@@ -15,3 +15,17 @@ CREATE TABLE day_clicks (
     day date PRIMARY KEY,
     counter int NOT NULL DEFAULT 0
 );
+
+- Pb de génération de créneaux (trop de génération de créneaux --> Créer une table créneaux)
+- Bloquer les jours avant aujourd'hui
+- Afficher dans Heures, les créneaux Overnight
+
+- Pas de JPA
+- Pas de Filtres
+- Spring MVC
+- ORM : EclipseLink
+- Authen Avec Filtres
+
++ :
+- Mail
+- Upload
