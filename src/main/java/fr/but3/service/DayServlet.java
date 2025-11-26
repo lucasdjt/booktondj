@@ -32,15 +32,14 @@ public class DayServlet extends HttpServlet {
         LocalDate date = LocalDate.parse(dateParam);
 
         BookingDAO dao = new BookingDAO();
-        List<Booking> bookingsToday     = dao.getBookingsForDay(date);
-        List<Booking> bookingsTomorrow  = dao.getBookingsForDay(date.plusDays(1));
+        List<Booking> bookingsToday = dao.getBookingsForDay(date);
+        List<Booking> bookingsTomorrow = dao.getBookingsForDay(date.plusDays(1));
 
         LocalTime startGlob = LocalTime.parse(Config.get("planning.horaire_debut"));
         LocalTime endGlob   = LocalTime.parse(Config.get("planning.horaire_final"));
-        boolean overnight   = endGlob.isBefore(startGlob);
+        boolean overnight = endGlob.isBefore(startGlob);
 
         boolean fixedSlot = "oui".equalsIgnoreCase(Config.get("planning.creneau_par_temps"));
-
         int duree = fixedSlot
                 ? Config.getMinutes("planning.creneau")
                 : Config.getMinutes("planning.creneau_min");
@@ -48,53 +47,113 @@ public class DayServlet extends HttpServlet {
         int pause = fixedSlot ? 0 : Config.getMinutes("planning.pause_delai");
         int maxPers = Integer.parseInt(Config.get("planning.nb_prsn"));
 
-        List<Creneau> flatList = new ArrayList<>();
-        Map<Integer, List<Creneau>> timeline = new LinkedHashMap<>();
-        for (int h = 0; h < 24; h++) {
-            timeline.put(h, new ArrayList<>());
-        }
+        Set<Integer> joursActifs = Config.getEnabledDays();
+        int maxDelay = Config.getMaxReservationDays();
+        LocalDate today = LocalDate.now();
 
-        LocalDateTime cursor   = LocalDateTime.of(date, startGlob);
+        List<Creneau> flatList = new ArrayList<>();
+
+        LocalDateTime cursor = LocalDateTime.of(date, startGlob);
         LocalDateTime endLimit = LocalDateTime.of(date, endGlob);
-        if (overnight) {
-            endLimit = endLimit.plusDays(1);
-        }
+        if (overnight) endLimit = endLimit.plusDays(1);
 
         while (!cursor.isAfter(endLimit)) {
 
             LocalDateTime slotEnd = cursor.plusMinutes(duree);
-            if (slotEnd.isAfter(endLimit.plusSeconds(1))) {
-                break;
-            }
-
-            boolean isTomorrowSlot = overnight && cursor.toLocalTime().isBefore(startGlob);
-
-            List<Booking> bookedList = isTomorrowSlot ? bookingsTomorrow : bookingsToday;
+            if (slotEnd.isAfter(endLimit.plusSeconds(1))) break;
 
             int inscrits = 0;
 
-            for (Booking b : bookedList) {
-                LocalDate bDate = b.getDate();
-                LocalDateTime bStart = LocalDateTime.of(bDate, b.getTimeStart());
-                LocalDateTime bEnd   = LocalDateTime.of(bDate, b.getTimeEnd());
+            for (Booking b : bookingsToday) {
+                LocalDateTime bStart = LocalDateTime.of(date, b.getTimeStart());
+                LocalDateTime bEnd   = LocalDateTime.of(date, b.getTimeEnd());
+                if (bEnd.isBefore(bStart)) bEnd = bEnd.plusDays(1);
 
-                if (bEnd.isBefore(bStart)) {
-                    bEnd = bEnd.plusDays(1);
-                }
-
-                if (bStart.isBefore(slotEnd) && bEnd.isAfter(cursor)) {
+                if (!bStart.isAfter(slotEnd) && !bEnd.isBefore(cursor)) {
                     inscrits += b.getNbPersonnes();
                 }
             }
 
-            Creneau c = new Creneau(cursor.toLocalTime(), slotEnd.toLocalTime());
-            c.nbInscrits = inscrits;
-            c.maxPers    = maxPers;
-            c.complet    = (inscrits >= maxPers);
+            if (overnight) {
+                for (Booking b : bookingsTomorrow) {
+                    LocalDateTime bStart = LocalDateTime.of(date.plusDays(1), b.getTimeStart());
+                    LocalDateTime bEnd   = LocalDateTime.of(date.plusDays(1), b.getTimeEnd());
+                    if (bEnd.isBefore(bStart)) bEnd = bEnd.plusDays(1);
 
-            c.dateReelle = isTomorrowSlot ? date.plusDays(1) : date;
+                    if (!bStart.isAfter(slotEnd) && !bEnd.isBefore(cursor)) {
+                        inscrits += b.getNbPersonnes();
+                    }
+                }
+            }
+
+            LocalDate dateReelle;
+            if (!overnight) {
+                dateReelle = date;
+            } else {
+                if (cursor.toLocalTime().isBefore(startGlob)) {
+                    dateReelle = date.plusDays(1);
+                } else {
+                    dateReelle = date;
+                }
+            }
+
+            Creneau c = new Creneau(cursor.toLocalTime(), slotEnd.toLocalTime(), dateReelle);
+            c.nbInscrits = inscrits;
+            c.maxPers = maxPers;
+            c.complet = (inscrits >= maxPers);
+
+            int dow = dateReelle.getDayOfWeek().getValue();
+            boolean ouvert = joursActifs.contains(dow);
+            Set<LocalDate> holidaysRealYear = Config.getHolidays(dateReelle.getYear());
+            boolean ferie = holidaysRealYear.contains(dateReelle);
+            boolean limiteDepassee = dateReelle.isAfter(today.plusDays(maxDelay));
+
+            c.reservable = ouvert && !ferie && !limiteDepassee;
 
             flatList.add(c);
+
+            cursor = slotEnd.plusMinutes(pause);
+        }
+
+        Map<Integer, List<Creneau>> timeline = new LinkedHashMap<>();
+        for (int h = 0; h < 24; h++) timeline.put(h, new ArrayList<>());
+
+        cursor = LocalDateTime.of(date, startGlob);
+        LocalDateTime endLimitTimeline = LocalDateTime.of(date, endGlob);
+        if (overnight) {
+            endLimitTimeline = LocalDateTime.of(date, LocalTime.MAX);
+        }
+
+        int dowDate = date.getDayOfWeek().getValue();
+        boolean ouvertDate = joursActifs.contains(dowDate);
+        Set<LocalDate> holidaysDateYear = Config.getHolidays(date.getYear());
+        boolean ferieDate = holidaysDateYear.contains(date);
+        boolean limiteDate = date.isAfter(today.plusDays(maxDelay));
+        boolean reservableJour = ouvertDate && !ferieDate && !limiteDate;
+
+        while (!cursor.isAfter(endLimitTimeline)) {
+
+            LocalDateTime slotEnd = cursor.plusMinutes(duree);
+            if (slotEnd.isAfter(endLimitTimeline.plusSeconds(1))) break;
+
+            int inscrits = 0;
+
+            for (Booking b : bookingsToday) {
+                LocalDateTime bStart = LocalDateTime.of(date, b.getTimeStart());
+                LocalDateTime bEnd   = LocalDateTime.of(date, b.getTimeEnd());
+                if (bEnd.isBefore(bStart)) bEnd = bEnd.plusDays(1);
+
+                if (!bStart.isAfter(slotEnd) && !bEnd.isBefore(cursor)) {
+                    inscrits += b.getNbPersonnes();
+                }
+            }
+
+            Creneau c = new Creneau(cursor.toLocalTime(), slotEnd.toLocalTime(), date);
+            c.nbInscrits = inscrits;
+            c.maxPers = maxPers;
+            c.complet = (inscrits >= maxPers);
+            c.reservable = reservableJour;
+
             timeline.get(cursor.getHour()).add(c);
 
             cursor = slotEnd.plusMinutes(pause);
@@ -108,7 +167,7 @@ public class DayServlet extends HttpServlet {
         req.setAttribute("end", endGlob);
         req.setAttribute("overnight", overnight);
 
-        req.setAttribute("planningColorPrimary",   Config.get("planning.couleur_principal"));
+        req.setAttribute("planningColorPrimary", Config.get("planning.couleur_principal"));
         req.setAttribute("planningColorSecondary", Config.get("planning.couleur_secondaire"));
 
         req.getRequestDispatcher("/WEB-INF/views/day.jsp").forward(req, res);
