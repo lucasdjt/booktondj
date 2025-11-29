@@ -1,21 +1,14 @@
 <%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.time.*" %>
 <%@ page import="java.util.*" %>
-<%@ page import="fr.but3.utils.Creneau" %>
+<%@ page import="fr.but3.model.Slot" %>
 
 <%
     LocalDate date = (LocalDate) request.getAttribute("date");
     String mode = (String) request.getAttribute("mode");
 
-    List<Creneau> creneaux =
-        (List<Creneau>) request.getAttribute("creneaux");
-
-    Map<Integer, List<Creneau>> timeline =
-        (Map<Integer, List<Creneau>>) request.getAttribute("timeline");
-
-    LocalTime start = (LocalTime) request.getAttribute("start");
-    LocalTime end   = (LocalTime) request.getAttribute("end");
-    boolean overnight = (boolean) request.getAttribute("overnight");
+    List<Map<String,Object>> creneaux =
+        (List<Map<String,Object>>) request.getAttribute("creneaux");
 
     String colorPri   = (String) request.getAttribute("planningColorPrimary");
     String colorSec   = (String) request.getAttribute("planningColorSecondary");
@@ -59,97 +52,113 @@
         </div>
     </div>
 
-    <% if (mode.equals("creneaux")) { %>
+<% if (mode.equals("creneaux")) { %>
 
-        <ul class="space-y-3">
+    <ul class="space-y-3">
 
-            <% for (Creneau c : creneaux) { %>
+        <% for (Map<String,Object> m : creneaux) {
 
-                <li class="p-4 rounded shadow"
-                    style="background:<%= c.complet ? "#FEE2E2" : colorSec %>">
+            Slot s = (Slot) m.get("slot");
+            int used = (int) m.get("used");
+            boolean complet = (boolean) m.get("complet");
+            boolean reservable = (boolean) m.get("reservable");
+        %>
 
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold"><%= c.timeStart %> - <%= c.timeEnd %></span>
+            <li class="p-4 rounded shadow"
+                style="background:<%= complet ? "#FEE2E2" : colorSec %>">
 
-                        <% if (!c.complet && c.reservable) { %>
-                            <a href="reserve?date=<%= c.dateReelle %>&start=<%= c.timeStart %>"
-                               class="px-3 py-1 text-white rounded"
-                               style="background:<%= colorPri %>;">
-                               Réserver
-                            </a>
-                        <% } else if (c.complet) { %>
-                            <span class="text-red-700 font-semibold">Complet</span>
-                        <% } else { %>
-                            <span class="text-gray-500 font-semibold">Indisponible</span>
-                        <% } %>
-                    </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold"><%= s.getStartTime() %> - <%= s.getEndTime() %></span>
 
-                    <div><%= c.nbInscrits %> / <%= c.maxPers %> personnes</div>
-                </li>
-
-            <% } %>
-
-        </ul>
-
-    <% } else { %>
-
-        <div class="space-y-3">
-
-            <% for (int h = 0; h < 24; h++) { %>
-
-                <div class="grid grid-cols-12 gap-3 p-3 rounded"
-                     style="background:<%= colorSec %>">
-
-                    <div class="col-span-2 font-semibold text-lg">
-                        <%= String.format("%02d:00", h) %>
-                    </div>
-
-                    <div class="col-span-10 flex flex-wrap gap-2">
-
-                        <% List<Creneau> hourList = timeline.get(h); %>
-
-                        <% if (hourList.isEmpty()) { %>
-
-                            <span class="text-gray-400 italic">Aucun créneau</span>
-
-                        <% } else { %>
-
-                            <% for (Creneau c : hourList) { %>
-
-                                <div class="px-4 py-2 rounded shadow text-sm"
-                                     style="background:<%= c.complet ? "#FECACA" : colorSec %>">
-
-                                    <div class="font-semibold"><%= c.timeStart %> – <%= c.timeEnd %></div>
-                                    <div class="text-xs">
-                                        <%= c.nbInscrits %> / <%= c.maxPers %> pers
-                                    </div>
-
-                                    <% if (!c.complet && c.reservable) { %>
-                                        <a href="reserve?date=<%= date %>&start=<%= c.timeStart %>"
-                                           class="inline-block mt-1 px-2 py-1 text-white rounded text-xs"
-                                           style="background:<%= colorPri %>">
-                                            Réserver
-                                        </a>
-                                    <% } else if (c.complet) { %>
-                                        <div class="text-red-700 font-semibold text-xs">Complet</div>
-                                    <% } else { %>
-                                        <div class="text-gray-500 font-semibold text-xs">Indisponible</div>
-                                    <% } %>
-
-                                </div>
-
-                            <% } %>
-
-                        <% } %>
-
-                    </div>
+                    <% if (reservable) { %>
+                        <a href="reserve?sid=<%= s.getId() %>&date=<%= date %>"
+                           class="px-3 py-1 text-white rounded"
+                           style="background:<%= colorPri %>;">
+                            Réserver
+                        </a>
+                    <% } else if (complet) { %>
+                        <span class="text-red-700 font-semibold">Complet</span>
+                    <% } else { %>
+                        <span class="text-gray-500 font-semibold">Indisponible</span>
+                    <% } %>
                 </div>
 
-            <% } %>
+                <div><%= used %> / <%= s.getCapacity() %> personnes</div>
 
-        </div>
+            </li>
 
-    <% } %>
+        <% } %>
+
+    </ul>
+
+<% } else { %>
+
+    <%
+        Map<Integer, List<Map<String,Object>>> hours = new LinkedHashMap<>();
+        for (int h = 0; h < 24; h++) hours.put(h, new ArrayList<>());
+
+        for (Map<String,Object> m : creneaux) {
+            Slot s = (Slot) m.get("slot");
+            hours.get(s.getStartTime().getHour()).add(m);
+        }
+    %>
+
+    <div class="space-y-3">
+
+        <% for (int h = 0; h < 24; h++) { %>
+
+            <div class="grid grid-cols-12 gap-3 p-3 rounded" style="background:<%= colorSec %>">
+
+                <div class="col-span-2 font-semibold text-lg">
+                    <%= String.format("%02d:00", h) %>
+                </div>
+
+                <div class="col-span-10 flex flex-wrap gap-2">
+
+                    <% List<Map<String,Object>> list = hours.get(h);
+
+                    if (list.isEmpty()) { %>
+
+                        <span class="text-gray-400 italic">Aucun créneau</span>
+
+                    <% } else {
+                        for (Map<String,Object> m : list) {
+                            Slot s = (Slot) m.get("slot");
+                            int used = (int) m.get("used");
+                            boolean complet = (boolean) m.get("complet");
+                            boolean reservable = (boolean) m.get("reservable");
+                    %>
+
+                        <div class="px-4 py-2 rounded shadow text-sm"
+                             style="background:<%= complet ? "#FECACA" : colorSec %>">
+
+                            <div class="font-semibold"><%= s.getStartTime() %> – <%= s.getEndTime() %></div>
+                            <div class="text-xs"><%= used %> / <%= s.getCapacity() %> pers</div>
+
+                            <% if (reservable) { %>
+                                <a href="reserve?sid=<%= s.getId() %>&date=<%= date %>"
+                                   class="inline-block mt-1 px-2 py-1 text-white rounded text-xs"
+                                   style="background:<%= colorPri %>">
+                                    Réserver
+                                </a>
+                            <% } else if (complet) { %>
+                                <div class="text-red-700 font-semibold text-xs">Complet</div>
+                            <% } else { %>
+                                <div class="text-gray-500 font-semibold text-xs">Indisponible</div>
+                            <% } %>
+
+                        </div>
+
+                    <% }} %>
+
+                </div>
+            </div>
+
+        <% } %>
+
+    </div>
+
+<% } %>
 
 </div>
 

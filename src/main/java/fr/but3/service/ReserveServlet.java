@@ -1,14 +1,16 @@
 package fr.but3.service;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-
-import fr.but3.dao.BookingDAO;
+import fr.but3.dao.ReservationDAO;
+import fr.but3.dao.SlotDAO;
+import fr.but3.dao.UserDAO;
+import fr.but3.model.Slot;
+import fr.but3.model.User;
 import fr.but3.utils.Config;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
+import java.io.IOException;
 
 @WebServlet("/reserve")
 public class ReserveServlet extends HttpServlet {
@@ -17,11 +19,11 @@ public class ReserveServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
+        String sidParam = req.getParameter("sid");
         String dateParam = req.getParameter("date");
-        String startParam = req.getParameter("start");
 
+        req.setAttribute("sid", sidParam);
         req.setAttribute("date", dateParam);
-        req.setAttribute("start", startParam);
 
         req.setAttribute("planningColorPrimary", Config.get("planning.couleur_principal"));
         req.setAttribute("planningColorSecondary", Config.get("planning.couleur_secondaire"));
@@ -31,24 +33,30 @@ public class ReserveServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
-            String dateStr = req.getParameter("date");
-            String startStr = req.getParameter("start");
-            String name     = req.getParameter("name");
 
-            LocalDate date = LocalDate.parse(dateStr);
-            LocalTime start = LocalTime.parse(startStr);
+        String sidStr  = req.getParameter("sid");
+        String dateStr = req.getParameter("date");
+        String name    = req.getParameter("name");
 
-            boolean fixedSlot = "oui".equalsIgnoreCase(Config.get("planning.creneau_par_temps"));
-            int duree = fixedSlot
-                    ? Config.getMinutes("planning.creneau")
-                    : Config.getMinutes("planning.creneau_min");
+        int sid = Integer.parseInt(sidStr);
 
-            LocalTime end = start.plusMinutes(duree);
+        UserDAO userDAO = new UserDAO();
+        ReservationDAO reservationDAO = new ReservationDAO();
+        SlotDAO slotDAO = new SlotDAO();
 
-            BookingDAO dao = new BookingDAO();
-            dao.createBooking(date, start, end, name, 1);
+        User u = userDAO.findOrCreateByName(name);
+        Slot s = slotDAO.getById(sid);
 
-            res.sendRedirect("day?date=" + date);
+        int used = reservationDAO.getUsedCapacityForSlot(sid);
+        int remaining = s.getCapacity() - used;
 
+        if (remaining <= 0) {
+            res.sendRedirect("day?date=" + dateStr + "&error=full");
+            return;
+        }
+
+        reservationDAO.createReservation(sid, u.getId(), 1);
+
+        res.sendRedirect("day?date=" + dateStr);
     }
 }

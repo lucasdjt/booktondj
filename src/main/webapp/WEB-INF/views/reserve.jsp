@@ -1,9 +1,8 @@
-<%@ page import="java.time.*" %>
 <%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
 
 <%
-    String date = request.getParameter("date");
-    String start = request.getParameter("start");
+    String date = (String) request.getAttribute("date");
+    String sid  = (String) request.getAttribute("sid");
 
     String planningColorPrimary   = (String) request.getAttribute("planningColorPrimary");
     String planningColorSecondary = (String) request.getAttribute("planningColorSecondary");
@@ -20,12 +19,11 @@
 
 <div class="max-w-md mx-auto bg-white p-6 mt-10 shadow-lg rounded-xl">
 
-    <h2 class="text-2xl font-bold mb-4">Réserver</h2>
+    <h2 class="text-2xl font-bold mb-4">Réserver le <%= date %></h2>
 
     <form method="post">
-
         <input type="hidden" name="date" value="<%= date %>">
-        <input type="hidden" name="start" value="<%= start %>">
+        <input type="hidden" name="sid" value="<%= sid %>">
 
         <label class="block font-semibold">Votre nom :</label>
         <input name="name" class="w-full p-2 border rounded mb-4" required>
@@ -34,7 +32,6 @@
                 style="background:<%= planningColorPrimary %>;">
             Confirmer la réservation
         </button>
-
     </form>
 
     <a href="day?date=<%= date %>"

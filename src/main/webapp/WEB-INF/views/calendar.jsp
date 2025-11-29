@@ -18,6 +18,8 @@
 
     String colorPri   = (String) request.getAttribute("planningColorPrimary");
     String colorSec   = (String) request.getAttribute("planningColorSecondary");
+
+    LocalDate today = LocalDate.now();
 %>
 
 <html>
@@ -71,6 +73,7 @@
                     if (started && currentDay <= nbDays) {
 
                         JourStats js = stats.get(currentDay);
+                        LocalDate d = LocalDate.of(year, month, currentDay);
 
                         String bg;
                         if (js.isLimiteDepassee() || !js.isOuvert() || js.isFerie()) bg = "#E5E7EB";
@@ -78,14 +81,15 @@
                         else if (js.getTauxOccupation() < 0.66) bg = "#FEF9C3";
                         else bg = "#FEE2E2";
 
-                        String openTag =
-                                (!js.isLimiteDepassee() && js.isOuvert() && !js.isFerie())
-                                ? "<a href='day?date=" + year + "-" +
-                                  String.format("%02d", month) + "-" +
-                                  String.format("%02d", currentDay) + "' class='block p-2 h-full'>"
-                                : "<div class='block p-2 h-full'>";
+                        boolean clickable = !js.isLimiteDepassee() && js.isOuvert() && !js.isFerie();
 
-                        String closeTag = openTag.startsWith("<a") ? "</a>" : "</div>";
+                        String openTag;
+                        if (clickable) {
+                            openTag = "<a href='day?date=" + d + "' class='block p-2 h-full'>";
+                        } else {
+                            openTag = "<div class='block p-2 h-full'>";
+                        }
+                        String closeTag = clickable ? "</a>" : "</div>";
 
                         out.print("<td class='border h-24 align-top' style='background:" + bg + ";'>");
 

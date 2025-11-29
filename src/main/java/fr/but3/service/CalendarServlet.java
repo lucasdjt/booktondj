@@ -1,7 +1,8 @@
 package fr.but3.service;
 
-import fr.but3.dao.BookingDAO;
-import fr.but3.model.Booking;
+import fr.but3.dao.SlotDAO;
+import fr.but3.dao.ReservationDAO;
+import fr.but3.model.Slot;
 import fr.but3.model.JourStats;
 import fr.but3.utils.Config;
 
@@ -20,101 +21,63 @@ public class CalendarServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        BookingDAO dao = new BookingDAO();
-
-        String monthParam = req.getParameter("month");
-        String yearParam = req.getParameter("year");
+        SlotDAO slotDAO = new SlotDAO();
+        ReservationDAO resDAO = new ReservationDAO();
 
         LocalDate today = LocalDate.now();
-        int month = (monthParam == null) ? today.getMonthValue() : Integer.parseInt(monthParam);
-        int year  = (yearParam  == null) ? today.getYear()        : Integer.parseInt(yearParam);
+
+        String m = req.getParameter("month");
+        String y = req.getParameter("year");
+
+        int month = (m == null) ? today.getMonthValue() : Integer.parseInt(m);
+        int year  = (y == null) ? today.getYear()        : Integer.parseInt(y);
+
         YearMonth ym = YearMonth.of(year, month);
+
+        int maxDelay = Config.getMaxReservationDays();
+        LocalDate limitDate = today.plusDays(maxDelay);
 
         Set<Integer> joursActifs = Config.getEnabledDays();
         Set<LocalDate> joursFeries = Config.getHolidays(year);
 
-        boolean fixedSlot = "oui".equalsIgnoreCase(Config.get("planning.creneau_par_temps"));
-
-        int duree = fixedSlot
-                ? Config.getMinutes("planning.creneau")
-                : Config.getMinutes("planning.creneau_min");
-
-        int pause = fixedSlot ? 0 : Config.getMinutes("planning.pause_delai");
-
-        int maxPers = Integer.parseInt(Config.get("planning.nb_prsn"));
-
-        LocalTime startGlob = LocalTime.parse(Config.get("planning.horaire_debut"));
-        LocalTime endGlob   = LocalTime.parse(Config.get("planning.horaire_final"));
-        boolean overnight = endGlob.isBefore(startGlob);
+        Map<Integer, Integer> usedMonth = resDAO.getUsedCapacityForMonth(year, month);
 
         Map<Integer, JourStats> stats = new HashMap<>();
 
-        for (int day = 1; day <= ym.lengthOfMonth(); day++) {
+        for (int d = 1; d <= ym.lengthOfMonth(); d++) {
 
-            LocalDate date = LocalDate.of(year, month, day);
-            int dow = date.getDayOfWeek().getValue();
+            LocalDate date = LocalDate.of(year, month, d);
 
-            boolean ouvert = joursActifs.contains(dow);
+            boolean ouvert = joursActifs.contains(date.getDayOfWeek().getValue());
             boolean ferie  = joursFeries.contains(date);
 
-            int maxDelay = Config.getMaxReservationDays();
-            boolean limiteDepassee = date.isAfter(today.plusDays(maxDelay));
+            boolean past = date.isBefore(today);
+            boolean limiteDepassee = past || date.isAfter(limitDate);
 
-            List<Booking> bookings = dao.getBookingsForDay(date);
-
-            int totalPersonnes = bookings.stream().mapToInt(Booking::getNbPersonnes).sum();
+            List<Slot> slots = slotDAO.getSlotsForDay(date);
 
             int creneauxDispo = 0;
-            int totalCreneaux = 0;
+            int totalPersonnes = 0;
 
-            if (ouvert && !ferie) {
-
-                LocalDateTime cursor = LocalDateTime.of(date, startGlob);
-                LocalDateTime endLimit = LocalDateTime.of(date, endGlob);
-
-                if (overnight) endLimit = endLimit.plusDays(1);
-
-                while (!cursor.isAfter(endLimit)) {
-
-                    LocalDateTime slotEnd = cursor.plusMinutes(duree);
-                    if (slotEnd.isAfter(endLimit.plusSeconds(1))) break;
-
-                    int inscrits = 0;
-
-                    for (Booking b : bookings) {
-                        LocalDateTime bStart = LocalDateTime.of(date, b.getTimeStart());
-                        LocalDateTime bEnd   = LocalDateTime.of(date, b.getTimeEnd());
-
-                        if (overnight) {
-                            if (bStart.toLocalTime().isBefore(startGlob)) bStart = bStart.plusDays(1);
-                            if (bEnd.toLocalTime().isBefore(startGlob)) bEnd = bEnd.plusDays(1);
-                            if (bEnd.isBefore(bStart)) bEnd = bEnd.plusDays(1);
-                        }
-
-                        boolean overlap =
-                                cursor.isBefore(bEnd) &&
-                                bStart.isBefore(slotEnd);
-
-                        if (overlap) {
-                            inscrits += b.getNbPersonnes();
-                        }
-
-                    }
-
-                    if (inscrits < maxPers) creneauxDispo++;
-                    totalCreneaux++;
-
-                    cursor = slotEnd.plusMinutes(pause);
+            if (!limiteDepassee && ouvert && !ferie) {
+                for (Slot s : slots) {
+                    int used = usedMonth.getOrDefault(s.getId(), 0);
+                    if (used < s.getCapacity()) creneauxDispo++;
+                    totalPersonnes += used;
                 }
             }
 
-            double taux = (totalCreneaux > 0)
-                    ? (double) totalPersonnes / (maxPers * totalCreneaux)
-                    : 0;
+            double taux;
+            if (slots.isEmpty() || limiteDepassee || !ouvert || ferie) {
+                taux = 0;
+            } else {
+                int capacityDay = slots.get(0).getCapacity() * slots.size();
+                taux = capacityDay == 0 ? 0 : (double) totalPersonnes / capacityDay;
+            }
 
             taux = Math.max(0, Math.min(1, taux));
 
-            stats.put(day, new JourStats(
+            stats.put(d, new JourStats(
                     creneauxDispo,
                     totalPersonnes,
                     ouvert,
@@ -143,9 +106,9 @@ public class CalendarServlet extends HttpServlet {
     }
 
     private static int rotateDay(int dow, int startIndex) {
-        int rotated = dow - startIndex + 1;
-        if (rotated <= 0) rotated += 7;
-        return rotated;
+        int r = dow - startIndex + 1;
+        if (r <= 0) r += 7;
+        return r;
     }
 
     private static int rotationIndex(String raw) {
