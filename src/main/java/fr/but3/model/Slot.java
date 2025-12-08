@@ -27,16 +27,52 @@ public class Slot {
 
     public Slot() {}
 
-    public Slot(LocalDate d, LocalTime s, LocalTime e, int cap) {
-        this.date = d;
-        this.startTime = s;
-        this.endTime = e;
-        this.capacity = cap;
+    public Slot(LocalDate date, LocalTime startTime, LocalTime endTime, int capacity) {
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.capacity = capacity;
     }
 
-    public int getId() { return id; }
-    public LocalDate getDate() { return date; }
-    public LocalTime getStartTime() { return startTime; }
-    public LocalTime getEndTime() { return endTime; }
-    public int getCapacity() { return capacity; }
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    
 }

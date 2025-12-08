@@ -1,22 +1,28 @@
 package fr.but3.repository;
 
+import fr.but3.model.Reservation;
 import fr.but3.utils.JPAUtil;
 import jakarta.persistence.*;
 
 public class ReservationRepository {
 
-    public int countPersonsInSlot(int sid) {
+    private final EntityManager em = JPAUtil.getEntityManager();
 
-        EntityManager em = JPAUtil.getEM();
+    public int getUsedCapacityForSlot(int sid) {
+        Long total = em.createQuery("""
+            SELECT COALESCE(SUM(r.nbPersonnes),0)
+            FROM Reservation r
+            WHERE r.slot.id = :sid
+        """, Long.class)
+        .setParameter("sid", sid)
+        .getSingleResult();
 
-        try {
-            Long result = em.createQuery(
-                "SELECT COALESCE(SUM(r.nbPersonnes),0) FROM Reservation r WHERE r.slot.id = :sid",
-                Long.class
-            ).setParameter("sid", sid).getSingleResult();
+        return total.intValue();
+    }
 
-            return result.intValue();
-
-        } finally { em.close(); }
+    public void save(Reservation r) {
+        em.getTransaction().begin();
+        em.persist(r);
+        em.getTransaction().commit();
     }
 }

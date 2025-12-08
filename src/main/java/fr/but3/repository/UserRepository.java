@@ -4,38 +4,28 @@ import fr.but3.model.User;
 import fr.but3.utils.JPAUtil;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 public class UserRepository {
 
+    private final EntityManager em = JPAUtil.getEntityManager();
+
+    public User findById(int id) {
+        return em.find(User.class, id);
+    }
+
     public User findByName(String name) {
-        EntityManager em = JPAUtil.getEM();
+        List<User> list = em.createQuery(
+                "SELECT u FROM User u WHERE u.name = :n", User.class)
+                .setParameter("n", name)
+                .getResultList();
 
-        try {
-            return em.createQuery("SELECT u FROM User u WHERE u.name = :n", User.class)
-                     .setParameter("n", name)
-                     .getResultStream()
-                     .findFirst()
-                     .orElse(null);
-        } finally {
-            em.close();
-        }
+        return list.isEmpty() ? null : list.get(0);
     }
 
-    public User save(User u) {
-        EntityManager em = JPAUtil.getEM();
-
-        try {
-            em.getTransaction().begin();
-            em.persist(u);
-            em.getTransaction().commit();
-            return u;
-        } finally {
-            em.close();
-        }
-    }
-
-    public User findOrCreate(String name) {
-        User u = findByName(name);
-        if (u != null) return u;
-        return save(new User(name));
+    public void save(User u) {
+        em.getTransaction().begin();
+        em.persist(u);
+        em.getTransaction().commit();
     }
 }

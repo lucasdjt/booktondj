@@ -1,8 +1,8 @@
 package fr.but3.service;
 
-import fr.but3.dao.SlotDAO;
-import fr.but3.dao.ReservationDAO;
 import fr.but3.model.Slot;
+import fr.but3.repository.ReservationRepository;
+import fr.but3.repository.SlotRepository;
 import fr.but3.utils.Config;
 
 import jakarta.servlet.ServletException;
@@ -10,7 +10,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.time.*;
+import java.time.LocalDate;
 import java.util.*;
 
 @WebServlet("/day")
@@ -20,8 +20,8 @@ public class DayServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        SlotDAO slotDAO = new SlotDAO();
-        ReservationDAO resDAO = new ReservationDAO();
+        SlotRepository slotRepo = new SlotRepository();
+        ReservationRepository resRepo = new ReservationRepository();
 
         LocalDate today = LocalDate.now();
         String mode = Optional.ofNullable(req.getParameter("mode")).orElse("creneaux");
@@ -34,16 +34,10 @@ public class DayServlet extends HttpServlet {
 
         LocalDate date = LocalDate.parse(dateParam);
 
-        if (date.isBefore(today)) {
-            res.sendRedirect("calendar");
-            return;
-        }
-
-        List<Slot> slots = slotDAO.getSlotsForDay(date);
+        List<Slot> slots = slotRepo.getSlotsForDay(date);
 
         int maxDelay = Config.getMaxReservationDays();
-        LocalDate limitDate = today.plusDays(maxDelay);
-        boolean limiteDepassee = date.isBefore(today) || date.isAfter(limitDate);
+        boolean limiteDepassee = date.isAfter(today.plusDays(maxDelay));
 
         Set<Integer> joursActifs = Config.getEnabledDays();
         boolean ouvert = joursActifs.contains(date.getDayOfWeek().getValue());
@@ -55,7 +49,7 @@ public class DayServlet extends HttpServlet {
 
         for (Slot s : slots) {
 
-            int used = resDAO.countPersonsForSlot(s.getId());
+            int used = resRepo.getUsedCapacityForSlot(s.getId());
             boolean complet = used >= s.getCapacity();
 
             boolean reservable =
@@ -64,29 +58,16 @@ public class DayServlet extends HttpServlet {
                     ouvert &&
                     !ferie;
 
-            Map<String,Object> m = new HashMap<>();
-            m.put("slot", s);
-            m.put("used", used);
-            m.put("complet", complet);
-            m.put("reservable", reservable);
+            Map<String,Object> map = new HashMap<>();
+            map.put("slot", s);
+            map.put("used", used);
+            map.put("complet", complet);
+            map.put("reservable", reservable);
 
-            viewCreneaux.add(m);
-        }
-
-        Map<Integer, List<Map<String,Object>>> hours = new LinkedHashMap<>();
-        for (int h = 0; h < 24; h++) {
-            hours.put(h, new ArrayList<>());
-        }
-
-        for (Map<String,Object> m : viewCreneaux) {
-            Slot s = (Slot) m.get("slot");
-            int hour = s.getStartTime().getHour();
-            hours.get(hour).add(m);
+            viewCreneaux.add(map);
         }
 
         req.setAttribute("creneaux", viewCreneaux);
-        req.setAttribute("hours", hours);
-
         req.setAttribute("mode", mode);
         req.setAttribute("date", date);
 

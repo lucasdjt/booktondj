@@ -1,11 +1,13 @@
 package fr.but3.service;
 
-import fr.but3.dao.ReservationDAO;
-import fr.but3.dao.SlotDAO;
-import fr.but3.dao.UserDAO;
+import fr.but3.model.Reservation;
 import fr.but3.model.Slot;
 import fr.but3.model.User;
+import fr.but3.repository.ReservationRepository;
+import fr.but3.repository.SlotRepository;
+import fr.but3.repository.UserRepository;
 import fr.but3.utils.Config;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -19,14 +21,12 @@ public class ReserveServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        String sidParam = req.getParameter("sid");
-        String dateParam = req.getParameter("date");
-
-        req.setAttribute("sid", sidParam);
-        req.setAttribute("date", dateParam);
+        req.setAttribute("sid", req.getParameter("sid"));
+        req.setAttribute("date", req.getParameter("date"));
 
         req.setAttribute("planningColorPrimary", Config.get("planning.couleur_principal"));
         req.setAttribute("planningColorSecondary", Config.get("planning.couleur_secondaire"));
+
         req.getRequestDispatcher("/WEB-INF/views/reserve.jsp").forward(req, res);
     }
 
@@ -34,28 +34,30 @@ public class ReserveServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        String sidStr  = req.getParameter("sid");
+        int sid = Integer.parseInt(req.getParameter("sid"));
         String dateStr = req.getParameter("date");
-        String name    = req.getParameter("name");
+        String name = req.getParameter("name");
 
-        int sid = Integer.parseInt(sidStr);
+        UserRepository userRepo = new UserRepository();
+        SlotRepository slotRepo = new SlotRepository();
+        ReservationRepository resRepo = new ReservationRepository();
 
-        UserDAO userDAO = new UserDAO();
-        ReservationDAO reservationDAO = new ReservationDAO();
-        SlotDAO slotDAO = new SlotDAO();
+        User u = userRepo.findByName(name);
+        if (u == null) {
+            u = new User(name);
+            userRepo.save(u);
+        }
 
-        User u = userDAO.findOrCreateByName(name);
-        Slot s = slotDAO.getById(sid);
+        Slot s = slotRepo.find(sid);
 
-        int used = reservationDAO.getUsedCapacityForSlot(sid);
-        int remaining = s.getCapacity() - used;
-
-        if (remaining <= 0) {
+        int used = resRepo.getUsedCapacityForSlot(sid);
+        if (used >= s.getCapacity()) {
             res.sendRedirect("day?date=" + dateStr + "&error=full");
             return;
         }
 
-        reservationDAO.createReservation(sid, u.getId(), 1);
+        Reservation r = new Reservation(s, u, 1);
+        resRepo.save(r);
 
         res.sendRedirect("day?date=" + dateStr);
     }
