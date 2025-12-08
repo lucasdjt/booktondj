@@ -1,48 +1,42 @@
 package fr.but3.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "reservations")
 public class Reservation {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "rid")
     private int id;
-    private int slotId;
-    private int userId;
+
+    @ManyToOne
+    @JoinColumn(name = "sid")
+    private Slot slot;
+
+    @ManyToOne
+    @JoinColumn(name = "uid")
+    private User user;
+
+    @Column(name = "nb_personnes", nullable = false)
     private int nbPersonnes;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    public Reservation(int id, int slotId, int userId, int nbPersonnes, LocalDateTime createdAt) {
-        this.id = id;
-        this.slotId = slotId;
-        this.userId = userId;
-        this.nbPersonnes = nbPersonnes;
-        this.createdAt = createdAt;
+    public Reservation() {}
+
+    public Reservation(Slot slot, User user, int nb) {
+        this.slot = slot;
+        this.user = user;
+        this.nbPersonnes = nb;
+        this.createdAt = LocalDateTime.now();
     }
 
-    public Reservation(int slotId, int userId, int nbPersonnes) {
-        this(0, slotId, userId, nbPersonnes, LocalDateTime.now());
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public int getSlotId() {
-        return slotId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public int getNbPersonnes() {
-        return nbPersonnes;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    public int getId() { return id; }
+    public Slot getSlot() { return slot; }
+    public User getUser() { return user; }
+    public int getNbPersonnes() { return nbPersonnes; }
 }
