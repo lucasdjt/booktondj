@@ -2,16 +2,16 @@ package fr.but3.service;
 
 import fr.but3.model.JourStats;
 import fr.but3.model.Slot;
-import fr.but3.repository.ReservationRepository;
-import fr.but3.repository.SlotRepository;
 import fr.but3.utils.Config;
-
+import fr.but3.utils.JPAUtil;
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 
 @WebServlet("/calendar")
@@ -21,61 +21,148 @@ public class CalendarServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        SlotRepository slotRepo = new SlotRepository();
-        ReservationRepository resRepo = new ReservationRepository();
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            LocalDate today = LocalDate.now();
 
-        LocalDate today = LocalDate.now();
+            String m = req.getParameter("month");
+            String y = req.getParameter("year");
 
-        int month = Optional.ofNullable(req.getParameter("month"))
-                .map(Integer::parseInt)
-                .orElse(today.getMonthValue());
+            int month = (m == null) ? today.getMonthValue() : Integer.parseInt(m);
+            int year  = (y == null) ? today.getYear()        : Integer.parseInt(y);
 
-        int year = Optional.ofNullable(req.getParameter("year"))
-                .map(Integer::parseInt)
-                .orElse(today.getYear());
+            YearMonth ym = YearMonth.of(year, month);
 
-        YearMonth ym = YearMonth.of(year, month);
+            Set<Integer> joursActifs = Config.getEnabledDays();
+            Set<LocalDate> joursFeries = Config.getHolidays(year);
 
-        Map<Integer, JourStats> stats = new HashMap<>();
+            int maxDelay = Config.getMaxReservationDays();
 
-        Set<Integer> joursActifs = Config.getEnabledDays();
-        Set<LocalDate> joursFeries = Config.getHolidays(year);
+            List<Slot> allSlots = em.createQuery(
+                    "SELECT s FROM Slot s " +
+                    "WHERE FUNCTION('YEAR', s.date) = :y " +
+                    "AND FUNCTION('MONTH', s.date) = :m",
+                    Slot.class
+            )
+            .setParameter("y", year)
+            .setParameter("m", month)
+            .getResultList();
 
-        for (int d = 1; d <= ym.lengthOfMonth(); d++) {
-
-            LocalDate date = LocalDate.of(year, month, d);
-
-            boolean ouvert = joursActifs.contains(date.getDayOfWeek().getValue());
-            boolean ferie = joursFeries.contains(date);
-            boolean limite = date.isAfter(today.plusDays(Config.getMaxReservationDays()));
-
-            List<Slot> slots = slotRepo.getSlotsForDay(date);
-
-            int dispo = 0;
-            int totalUsed = 0;
-
-            for (Slot s : slots) {
-                int used = resRepo.getUsedCapacityForSlot(s.getId());
-                totalUsed += used;
-
-                if (used < s.getCapacity()) dispo++;
+            Map<LocalDate, List<Slot>> slotsByDate = new HashMap<>();
+            for (Slot s : allSlots) {
+                slotsByDate
+                        .computeIfAbsent(s.getDate(), d -> new ArrayList<>())
+                        .add(s);
             }
 
-            double taux =
-                    (slots.isEmpty())
-                            ? 0
-                            : (double) totalUsed / (slots.size() * slots.get(0).getCapacity());
+            List<Object[]> usedRows = em.createQuery(
+                    "SELECT r.slot.id, SUM(r.nbPersonnes) " +
+                    "FROM Reservation r " +
+                    "WHERE FUNCTION('YEAR', r.slot.date) = :y " +
+                    "AND FUNCTION('MONTH', r.slot.date) = :m " +
+                    "GROUP BY r.slot.id",
+                    Object[].class
+            )
+            .setParameter("y", year)
+            .setParameter("m", month)
+            .getResultList();
 
-            taux = Math.max(0, Math.min(1, taux));
+            Map<Integer, Integer> usedBySlotId = new HashMap<>();
+            for (Object[] row : usedRows) {
+                Integer sid = (Integer) row[0];
+                Long used = (Long) row[1];
+                usedBySlotId.put(sid, used.intValue());
+            }
 
-            stats.put(d, new JourStats(dispo, totalUsed, ouvert, ferie, taux, limite));
+            Map<Integer, JourStats> stats = new HashMap<>();
+
+            for (int d = 1; d <= ym.lengthOfMonth(); d++) {
+
+                LocalDate date = LocalDate.of(year, month, d);
+
+                boolean ouvert = joursActifs.contains(date.getDayOfWeek().getValue());
+                boolean ferie  = joursFeries.contains(date);
+
+                boolean limiteDepassee =
+                        date.isAfter(today.plusDays(maxDelay)) ||
+                        date.isBefore(today);
+
+                List<Slot> slots = slotsByDate.getOrDefault(date, Collections.emptyList());
+
+                int dispo = 0;
+                int totalPers = 0;
+                int totalCap = 0;
+
+                for (Slot s : slots) {
+                    int used = usedBySlotId.getOrDefault(s.getId(), 0);
+                    totalPers += used;
+                    totalCap  += s.getCapacity();
+
+                    if (used < s.getCapacity()) {
+                        dispo++;
+                    }
+                }
+
+                double taux;
+                if (totalCap == 0) {
+                    taux = 0.0;
+                } else {
+                    taux = (double) totalPers / totalCap;
+                    if (taux < 0) taux = 0;
+                    if (taux > 1) taux = 1;
+                }
+
+                stats.put(d, new JourStats(
+                        dispo,
+                        totalPers,
+                        ouvert,
+                        ferie,
+                        taux,
+                        limiteDepassee
+                ));
+            }
+
+            int firstDayIndex = rotationIndex(Config.get("planning.premier_jour_semaine"));
+            int firstDayMonth = rotateDay(
+                    ym.atDay(1).getDayOfWeek().getValue(),
+                    firstDayIndex
+            );
+
+            req.setAttribute("stats", stats);
+            req.setAttribute("year", year);
+            req.setAttribute("month", month);
+            req.setAttribute("nbDays", ym.lengthOfMonth());
+            req.setAttribute("firstDay", firstDayMonth);
+
+            req.setAttribute("planningColorPrimary", Config.get("planning.couleur_principal"));
+            req.setAttribute("planningColorSecondary", Config.get("planning.couleur_secondaire"));
+
+            req.getRequestDispatcher("/WEB-INF/views/calendar.jsp").forward(req, res);
+
+        } finally {
+            em.close();
         }
+    }
 
-        req.setAttribute("stats", stats);
-        req.setAttribute("year", year);
-        req.setAttribute("month", month);
-        req.setAttribute("nbDays", ym.lengthOfMonth());
+    private static int rotateDay(int dow, int startIndex) {
+        int rotated = dow - startIndex + 1;
+        if (rotated <= 0) rotated += 7;
+        return rotated;
+    }
 
-        req.getRequestDispatcher("/WEB-INF/views/calendar.jsp").forward(req, res);
+    private static int rotationIndex(String raw) {
+        if (raw == null) return 1;
+
+        raw = raw.trim().toLowerCase();
+        switch (raw) {
+            case "lundi": return 1;
+            case "mardi": return 2;
+            case "mercredi": return 3;
+            case "jeudi": return 4;
+            case "vendredi": return 5;
+            case "samedi": return 6;
+            case "dimanche": return 7;
+        }
+        return 1;
     }
 }

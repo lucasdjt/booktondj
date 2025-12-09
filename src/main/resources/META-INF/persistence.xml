@@ -5,6 +5,7 @@
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
 
     <persistence-unit name="booktondjPU" transaction-type="RESOURCE_LOCAL">
+
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <class>fr.but3.model.User</class>
@@ -12,17 +13,17 @@
         <class>fr.but3.model.Reservation</class>
 
         <properties>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:booktondj;DB_CLOSE_DELAY=-1;MODE=PostgreSQL" />
-            <property name="jakarta.persistence.jdbc.user" value="sa" />
-            <property name="jakarta.persistence.jdbc.password" value="" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:booktondj;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"/>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
 
             <property name="hibernate.hbm2ddl.auto" value="update"/>
-
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="false"/>
+
+            <property name="hibernate.hbm2ddl.import_files" value="data.sql"/>
+
         </properties>
-
     </persistence-unit>
-
 </persistence>

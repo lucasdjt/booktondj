@@ -9,7 +9,6 @@ public class JourStats {
     private double tauxOccupation;
     private boolean limiteDepassee;
 
-
     public JourStats(int nbCreneauxDisponibles,
                      int nbTotalPersonnes,
                      boolean ouvert,
@@ -25,27 +24,10 @@ public class JourStats {
         this.limiteDepassee = limiteDepassee;
     }
 
-    public int getNbCreneauxDisponibles() {
-        return nbCreneauxDisponibles;
-    }
-
-    public int getNbTotalPersonnes() {
-        return nbTotalPersonnes;
-    }
-
-    public boolean isOuvert() {
-        return ouvert;
-    }
-
-    public boolean isFerie() {
-        return ferie;
-    }
-
-    public double getTauxOccupation() {
-        return tauxOccupation;
-    }
-
-    public boolean isLimiteDepassee() { 
-        return limiteDepassee;
-    }
+    public int getNbCreneauxDisponibles() { return nbCreneauxDisponibles; }
+    public int getNbTotalPersonnes() { return nbTotalPersonnes; }
+    public boolean isOuvert() { return ouvert; }
+    public boolean isFerie() { return ferie; }
+    public double getTauxOccupation() { return tauxOccupation; }
+    public boolean isLimiteDepassee() { return limiteDepassee; }
 }

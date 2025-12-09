@@ -1,6 +1,7 @@
 package fr.but3.model;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -14,72 +15,34 @@ public class User {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column
-    private String email;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
-    @Column
-    private String tel;
-
-    @Column
-    private String password;
-
-    @Column
+    @Column(nullable = false)
     private String role;
+
+    @OneToMany(mappedBy = "user")
+    private List<Reservation> reservations;
 
     public User() {}
 
-    public User(String name) {
+    public User(String name, String passwordHash, String role) {
         this.name = name;
-        this.role = "USER";
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getTel() {
-        return tel;
-    }
-
-    public void setTel(String tel) {
-        this.tel = tel;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
+        this.passwordHash = passwordHash;
         this.role = role;
     }
 
-    
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public List<Reservation> getReservations() { return reservations; }
 }

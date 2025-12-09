@@ -1,7 +1,6 @@
 package fr.but3.repository;
 
 import fr.but3.model.Slot;
-import fr.but3.utils.JPAUtil;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -9,20 +8,21 @@ import java.util.List;
 
 public class SlotRepository {
 
-    private final EntityManager em = JPAUtil.getEntityManager();
+    private final EntityManager em;
+
+    public SlotRepository(EntityManager em) {
+        this.em = em;
+    }
 
     public Slot find(int id) {
         return em.find(Slot.class, id);
     }
 
-    public List<Slot> getSlotsForDay(LocalDate date) {
-        return em.createQuery("""
-            SELECT s FROM Slot s
-            WHERE s.date = :d
-            ORDER BY s.startTime
-        """, Slot.class)
-        .setParameter("d", date)
-        .getResultList();
+    public List<Slot> findByDate(LocalDate d) {
+        return em.createQuery(
+                "SELECT s FROM Slot s WHERE s.date = :d ORDER BY s.startTime",
+                Slot.class
+        ).setParameter("d", d).getResultList();
     }
 
     public void save(Slot s) {
