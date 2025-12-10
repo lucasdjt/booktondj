@@ -17,7 +17,9 @@
     </a>
 
     <div class="flex gap-4 items-center">
-
+        <% if (p != null && "ADMIN".equals(p.getRole())) { %>
+            <a href="admin/db" style="color:<%= couleur2 %>">Base de données</a>
+        <% } %>
         <a href="calendar" class="font-semibold" style="color:<%= couleur2 %>">Calendrier</a>
 
         <% if (p == null) { %>

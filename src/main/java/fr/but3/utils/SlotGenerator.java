@@ -55,15 +55,16 @@ public class SlotGenerator {
                 LocalDateTime slotEnd = cursor.plusMinutes(duree);
                 if (slotEnd.isAfter(limit.plusSeconds(1))) break;
 
-                boolean exists = em.createQuery(
+                Long count = em.createQuery(
                         "SELECT COUNT(s) FROM Slot s " +
-                        "WHERE s.date = :d AND s.startTime = :t", Long.class
+                        "WHERE s.date = :d AND s.startTime = :t",
+                        Long.class
                 )
                 .setParameter("d", cursor.toLocalDate())
                 .setParameter("t", cursor.toLocalTime())
-                .getSingleResult() > 0;
+                .getSingleResult();
 
-                if (!exists) {
+                if (count == 0) {
                     em.getTransaction().begin();
                     em.persist(new Slot(
                             cursor.toLocalDate(),
