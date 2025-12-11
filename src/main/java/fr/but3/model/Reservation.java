@@ -4,26 +4,29 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reservations")
+@Table(
+    name = "reservations",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"uid", "sid"})
+)
 public class Reservation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "rid")
-    private int id;
+    private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "sid")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "sid", nullable = false)
     private Slot slot;
 
-    @ManyToOne
-    @JoinColumn(name = "uid")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "uid", nullable = false)
     private User user;
 
-    @Column(name = "nb_personnes")
+    @Column(name = "nb_personnes", nullable = false)
     private int nbPersonnes;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Reservation() {}
@@ -34,11 +37,11 @@ public class Reservation {
         this.nbPersonnes = nbPersonnes;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

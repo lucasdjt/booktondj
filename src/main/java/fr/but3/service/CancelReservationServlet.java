@@ -23,7 +23,7 @@ public class CancelReservationServlet extends HttpServlet {
                 : null;
 
         if (principal == null) {
-            res.sendRedirect("login?error=auth");
+            res.sendRedirect(req.getContextPath() + "/login?error=auth");
             return;
         }
 
@@ -61,7 +61,6 @@ public class CancelReservationServlet extends HttpServlet {
         } finally {
             em.close();
         }
-
-        res.sendRedirect("my-reservations");
+        res.sendRedirect(req.getContextPath() + "/my-reservations");
     }
 }

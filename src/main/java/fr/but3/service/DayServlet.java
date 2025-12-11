@@ -21,7 +21,7 @@ public class DayServlet extends HttpServlet {
 
         String dateParam = req.getParameter("date");
         if (dateParam == null) {
-            res.sendRedirect("calendar");
+            res.sendRedirect(req.getContextPath() + "/calendar");
             return;
         }
 

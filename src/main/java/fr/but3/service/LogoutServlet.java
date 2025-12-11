@@ -17,8 +17,8 @@ public class LogoutServlet extends HttpServlet {
         if (session != null) {
             session.invalidate();
         }
-
-        res.sendRedirect("calendar");
+        
+        res.sendRedirect(req.getContextPath() + "/calendar");
     }
 
     @Override

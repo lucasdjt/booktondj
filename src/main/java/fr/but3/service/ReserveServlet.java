@@ -39,9 +39,9 @@ public class ReserveServlet extends HttpServlet {
 
         String sidStr  = req.getParameter("sid");
         String dateStr = req.getParameter("date");
-
+        String ctx = req.getContextPath();
         if (sidStr == null || dateStr == null) {
-            res.sendRedirect("calendar");
+            res.sendRedirect(ctx + "calendar");
             return;
         }
 
@@ -53,7 +53,7 @@ public class ReserveServlet extends HttpServlet {
                 : null;
 
         if (principal == null) {
-            res.sendRedirect("login?redirect=reserve&sid=" + sidStr + "&date=" + dateStr);
+            res.sendRedirect(ctx + "login?redirect=reserve&sid=" + sidStr + "&date=" + dateStr);
             return;
         }
         LocalDate date = LocalDate.parse(dateStr);
@@ -65,20 +65,20 @@ public class ReserveServlet extends HttpServlet {
                 date.isBefore(today);
 
         if (limiteDepassee) {
-            res.sendRedirect("day?date=" + dateStr + "&error=expired");
+            res.sendRedirect(ctx + "day?date=" + dateStr + "&error=expired");
             return;
         }
         EntityManager em = JPAUtil.getEntityManager();
         try {
             Slot slot = em.find(Slot.class, sid);
             if (slot == null) {
-                res.sendRedirect("day?date=" + dateStr + "&error=notslot");
+                res.sendRedirect(ctx + "day?date=" + dateStr + "&error=notslot");
                 return;
             }
 
             User user = em.find(User.class, principal.getUserId());
             if (user == null) {
-                res.sendRedirect("login");
+                res.sendRedirect(ctx + "login");
                 return;
             }
 
@@ -94,17 +94,28 @@ public class ReserveServlet extends HttpServlet {
             int remaining = slot.getCapacity() - used;
 
             if (remaining <= 0) {
-                res.sendRedirect("day?date=" + dateStr + "&error=full");
+                res.sendRedirect(ctx + "day?date=" + dateStr + "&error=full");
                 return;
             }
+            Long count = em.createQuery(
+                "SELECT COUNT(r) FROM Reservation r WHERE r.user.id = :uid AND r.slot.id = :sid",
+                Long.class
+            )
+            .setParameter("uid", user.getId())
+            .setParameter("sid", sid)
+            .getSingleResult();
 
+            if (count > 0) {
+                res.sendRedirect(ctx + "day?date=" + dateStr + "&error=already");
+                return;
+            }
             Reservation r = new Reservation(slot, user, 1);
 
             em.getTransaction().begin();
             em.persist(r);
             em.getTransaction().commit();
 
-            res.sendRedirect("day?date=" + dateStr);
+            res.sendRedirect(ctx + "day?date=" + dateStr);
 
         } finally {
             em.close();

@@ -10,8 +10,9 @@ import jakarta.persistence.*;
 public class Slot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "sid")
+    private Integer id;
 
     @Column(name="slot_date", nullable = false)
     private LocalDate date;
@@ -22,6 +23,7 @@ public class Slot {
     @Column(name="time_end", nullable = false)
     private LocalTime endTime;
 
+    @Column(nullable = false)
     private int capacity;
 
     public Slot() {}
@@ -33,11 +35,11 @@ public class Slot {
         this.capacity = capacity;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -72,4 +74,6 @@ public class Slot {
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
+
+    
 }

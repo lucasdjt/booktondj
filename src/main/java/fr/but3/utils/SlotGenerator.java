@@ -2,7 +2,6 @@ package fr.but3.utils;
 
 import fr.but3.model.Slot;
 import jakarta.persistence.EntityManager;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,6 +15,8 @@ public class SlotGenerator {
     }
 
     public void generateMissingSlots() {
+
+        em.getTransaction().begin();
 
         LocalDate today = LocalDate.now();
 
@@ -53,7 +54,8 @@ public class SlotGenerator {
             while (!cursor.isAfter(limit)) {
 
                 LocalDateTime slotEnd = cursor.plusMinutes(duree);
-                if (slotEnd.isAfter(limit.plusSeconds(1))) break;
+                if (slotEnd.isAfter(limit.plusSeconds(1)))
+                    break;
 
                 Long count = em.createQuery(
                         "SELECT COUNT(s) FROM Slot s " +
@@ -65,18 +67,17 @@ public class SlotGenerator {
                 .getSingleResult();
 
                 if (count == 0) {
-                    em.getTransaction().begin();
                     em.persist(new Slot(
                             cursor.toLocalDate(),
                             cursor.toLocalTime(),
                             slotEnd.toLocalTime(),
                             capacity
                     ));
-                    em.getTransaction().commit();
                 }
 
                 cursor = slotEnd.plusMinutes(pause);
             }
         }
+        em.getTransaction().commit();
     }
 }

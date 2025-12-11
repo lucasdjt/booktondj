@@ -25,7 +25,7 @@ public class MyReservationsServlet extends HttpServlet {
                 : null;
 
         if (principal == null) {
-            res.sendRedirect("login?error=auth");
+            res.sendRedirect(req.getContextPath() + "/login?error=auth");
             return;
         }
 

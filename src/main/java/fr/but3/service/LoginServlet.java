@@ -55,7 +55,7 @@ public class LoginServlet extends HttpServlet {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<User> q = em.createQuery(
-                    "SELECT u FROM User u WHERE u.name = :n AND u.passwordHash = :h",
+                    "SELECT u FROM User u WHERE u.name = :n AND u.pwd = :h",
                     User.class
             );
             q.setParameter("n", name);
