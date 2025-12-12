@@ -9,32 +9,35 @@
     String couleur2 = (String) request.getAttribute("planningColorSecondary");
     if (couleur1 == null) couleur1 = "#2563eb";
     if (couleur2 == null) couleur2 = "#1e293b";
+
+    String ctx = request.getContextPath();
 %>
 
 <div class="w-full flex justify-between items-center px-4 py-3 mb-6 shadow bg-white">
-    <a href="calendar" class="text-xl font-bold" style="color:<%= couleur1 %>">
+    <a href="<%= ctx %>/calendar" class="text-xl font-bold" style="color:<%= couleur1 %>">
         <%= Config.get("site.titre") %>
     </a>
 
     <div class="flex gap-4 items-center">
-        <% if (p != null && "ADMIN".equals(p.getRole())) { %>
-            <a href="admin/db" style="color:<%= couleur2 %>">Base de données</a>
+        <% if (p != null && p.isAdmin()) { %>
+            <a href="<%= ctx %>/admin/db" style="color:<%= couleur2 %>">Base de données</a>
         <% } %>
-        <a href="calendar" class="font-semibold" style="color:<%= couleur2 %>">Calendrier</a>
+
+        <a href="<%= ctx %>/calendar" class="font-semibold" style="color:<%= couleur2 %>">Calendrier</a>
 
         <% if (p == null) { %>
 
-            <a href="login" class="font-semibold" style="color:<%= couleur2 %>">Connexion</a>
+            <a href="<%= ctx %>/login" class="font-semibold" style="color:<%= couleur2 %>">Connexion</a>
 
         <% } else { %>
 
             <span class="font-semibold">Bonjour <%= p.getUsername() %></span>
 
-            <a href="my-reservations" style="color:<%= couleur2 %>">Mes réservations</a>
-            <a href="logout" style="color:<%= couleur2 %>">Déconnexion</a>
+            <a href="<%= ctx %>/my-reservations" style="color:<%= couleur2 %>">Mes réservations</a>
+            <a href="<%= ctx %>/logout" style="color:<%= couleur2 %>">Déconnexion</a>
 
             <% if (p.isAdmin()) { %>
-                <a href="admin/dashboard" style="color:<%= couleur2 %>">Admin</a>
+                <a href="<%= ctx %>/admin/dashboard" style="color:<%= couleur2 %>">Admin</a>
             <% } %>
 
         <% } %>

@@ -1,3 +1,5 @@
+<%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
+
 <html>
 <head>
     <script src="https://cdn.tailwindcss.com"></script>
