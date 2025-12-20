@@ -1,38 +1,15 @@
 package fr.but3.repository;
 
 import fr.but3.model.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public class UserRepository {
+import java.util.Optional;
 
-    private final EntityManager em;
+public interface UserRepository extends JpaRepository<User, Integer> {
 
-    public UserRepository(EntityManager em) {
-        this.em = em;
-    }
+    Optional<User> findByName(String name);
 
-    public User find(int id) {
-        return em.find(User.class, id);
-    }
+    Optional<User> findByNameAndPwd(String name, String pwd);
 
-    public User findByName(String name) {
-        TypedQuery<User> q = em.createQuery(
-                "SELECT u FROM User u WHERE u.name = :n", User.class);
-        q.setParameter("n", name);
-        return q.getResultStream().findFirst().orElse(null);
-    }
-
-    public User save(User u) {
-        em.getTransaction().begin();
-
-        if (u.getId() == 0) {
-            em.persist(u);
-        } else {
-            u = em.merge(u);
-        }
-
-        em.getTransaction().commit();
-        return u;
-    }
+    boolean existsByName(String name);
 }

@@ -14,13 +14,13 @@
 </head>
 
 <body class="bg-gray-100">
-<%@ include file="/WEB-INF/includes/header.jspf" %>
+<%@ include file="/WEB-INF/jsp/includes/header.jspf" %>
 
 <div class="max-w-md mx-auto bg-white p-6 mt-10 shadow-lg rounded-xl">
 
     <h2 class="text-2xl font-bold mb-4">Confirmer votre réservation</h2>
 
-    <form method="post">
+    <form method="post" action="reserve">
         <input type="hidden" name="date" value="<%= date %>">
         <input type="hidden" name="sid" value="<%= sid %>">
 
@@ -39,6 +39,6 @@
 
 </div>
 
-<%@ include file="/WEB-INF/includes/footer.jspf" %>
+<%@ include file="/WEB-INF/jsp/includes/footer.jspf" %>
 </body>
 </html>

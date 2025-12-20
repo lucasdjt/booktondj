@@ -1,29 +1,32 @@
 package fr.but3.utils;
 
 import fr.but3.model.Slot;
-import jakarta.persistence.EntityManager;
+import fr.but3.repository.ReservationRepository;
+import fr.but3.repository.SlotRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@Service
 public class SlotGenerator {
 
-    private final EntityManager em;
+    private final SlotRepository slotRepository;
+    private final ReservationRepository reservationRepository;
 
-    public SlotGenerator(EntityManager em) {
-        this.em = em;
+    public SlotGenerator(SlotRepository slotRepository, ReservationRepository reservationRepository) {
+        this.slotRepository = slotRepository;
+        this.reservationRepository = reservationRepository;
     }
 
+    @Transactional
     public void generateMissingSlots() {
-
-        em.getTransaction().begin();
 
         LocalDate today = LocalDate.now();
 
-        LocalDate firstReserved = em.createQuery(
-                "SELECT MIN(r.slot.date) FROM Reservation r",
-                LocalDate.class
-        ).getSingleResult();
+        LocalDate firstReserved = reservationRepository.findMinReservedDate();
 
         LocalDate startDate =
                 (firstReserved != null && firstReserved.isBefore(today))
@@ -54,20 +57,15 @@ public class SlotGenerator {
             while (!cursor.isAfter(limit)) {
 
                 LocalDateTime slotEnd = cursor.plusMinutes(duree);
-                if (slotEnd.isAfter(limit.plusSeconds(1)))
-                    break;
+                if (slotEnd.isAfter(limit.plusSeconds(1))) break;
 
-                Long count = em.createQuery(
-                        "SELECT COUNT(s) FROM Slot s " +
-                        "WHERE s.date = :d AND s.startTime = :t",
-                        Long.class
-                )
-                .setParameter("d", cursor.toLocalDate())
-                .setParameter("t", cursor.toLocalTime())
-                .getSingleResult();
+                boolean exists = slotRepository.existsByDateAndStartTime(
+                        cursor.toLocalDate(),
+                        cursor.toLocalTime()
+                );
 
-                if (count == 0) {
-                    em.persist(new Slot(
+                if (!exists) {
+                    slotRepository.save(new Slot(
                             cursor.toLocalDate(),
                             cursor.toLocalTime(),
                             slotEnd.toLocalTime(),
@@ -78,6 +76,5 @@ public class SlotGenerator {
                 cursor = slotEnd.plusMinutes(pause);
             }
         }
-        em.getTransaction().commit();
     }
 }

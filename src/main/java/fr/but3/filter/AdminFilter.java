@@ -20,7 +20,8 @@ public class AdminFilter implements Filter {
         Principal p = (Principal) r.getSession().getAttribute("principal");
 
         if (p == null || !p.isAdmin()) {
-            s.sendRedirect(r.getContextPath() + "/login?error=admin");
+            String ctx = r.getContextPath();
+            s.sendRedirect(ctx + "/login?error=admin");
             return;
         }
 

@@ -8,7 +8,7 @@
 </head>
 
 <body class="bg-gray-100">
-<%@ include file="/WEB-INF/includes/header.jspf" %>
+<%@ include file="/WEB-INF/jsp/includes/header.jspf" %>
 
 <div class="max-w-6xl mx-auto bg-white p-6 mt-10 rounded-xl shadow">
 
@@ -62,6 +62,6 @@
 
 </div>
 
-<%@ include file="/WEB-INF/includes/footer.jspf" %>
+<%@ include file="/WEB-INF/jsp/includes/footer.jspf" %>
 </body>
 </html>

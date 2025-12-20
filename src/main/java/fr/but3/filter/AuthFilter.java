@@ -25,7 +25,8 @@ public class AuthFilter implements Filter {
         Principal p = (Principal) r.getSession().getAttribute("principal");
 
         if (p == null) {
-            s.sendRedirect(r.getContextPath() + "/login?error=auth");
+            String ctx = r.getContextPath();
+            s.sendRedirect(ctx + "/login?error=auth");
             return;
         }
 

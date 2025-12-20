@@ -1,28 +1,49 @@
 package fr.but3.repository;
 
 import fr.but3.model.Reservation;
-import jakarta.persistence.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-public class ReservationRepository {
+import java.time.LocalDate;
+import java.util.List;
 
-    private final EntityManager em;
+public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
 
-    public ReservationRepository(EntityManager em) {
-        this.em = em;
-    }
+    @Query("""
+        select r.slot.id, coalesce(sum(r.nbPersonnes), 0)
+        from Reservation r
+        where r.slot.date between :start and :end
+        group by r.slot.id
+    """)
+    List<Object[]> usedBySlotBetween(LocalDate start, LocalDate end);
 
-    public int countForSlot(int slotId) {
-        Long count = em.createQuery(
-                "SELECT COALESCE(SUM(r.nbPersonnes),0) FROM Reservation r WHERE r.slot.id = :sid",
-                Long.class
-        ).setParameter("sid", slotId).getSingleResult();
+    @Query("""
+        select r.slot.id, coalesce(sum(r.nbPersonnes), 0)
+        from Reservation r
+        where r.slot.date = :date
+        group by r.slot.id
+    """)
+    List<Object[]> usedBySlotForDate(LocalDate date);
 
-        return count.intValue();
-    }
+    List<Reservation> findByUserIdOrderBySlotDateAscSlotStartTimeAsc(Integer uid);
 
-    public void save(Reservation r) {
-        em.getTransaction().begin();
-        em.persist(r);
-        em.getTransaction().commit();
-    }
+    long countByUserIdAndSlotId(Integer userId, Integer slotId);
+
+    @Query("""
+        select coalesce(sum(r.nbPersonnes), 0)
+        from Reservation r
+        where r.slot.id = :slotId
+    """)
+    long usedForSlot(Integer slotId);
+
+    @Query("""
+        select r from Reservation r
+        join fetch r.slot s
+        join fetch r.user u
+        order by s.date, s.startTime
+    """)
+    List<Reservation> findAllWithSlotAndUser();
+
+    @Query("SELECT MIN(r.slot.date) FROM Reservation r")
+    LocalDate findMinReservedDate();
 }

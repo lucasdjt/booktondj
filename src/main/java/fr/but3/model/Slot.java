@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 public class Slot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sid")
     private Integer id;
 

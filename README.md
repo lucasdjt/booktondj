@@ -3,10 +3,7 @@
 Informations disponible prochainement.
 
 ```
-mvn clean package
-mvn cargo:run
-psql -U postgres -d booktondj
-java -cp ~/.m2/repository/com/h2database/h2/* jar org.h2.tools.Server -web
+mvn clean spring-boot:run
 ```
 
 [Lien](http://localhost:8080/booktondj/)
