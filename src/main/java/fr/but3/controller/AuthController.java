@@ -1,21 +1,20 @@
 package fr.but3.controller;
 
 import fr.but3.model.Principal;
-import fr.but3.model.User;
-import fr.but3.repository.UserRepository;
-import fr.but3.utils.MD5Util;
+import fr.but3.service.AuthService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Controller
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final AuthService authService;
 
-    public AuthController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @GetMapping("/login")
@@ -44,23 +43,24 @@ public class AuthController {
                         @RequestParam(required = false) String date,
                         HttpSession session) {
 
-        if (name == null || password == null || name.isBlank() || password.isBlank()) {
+        final Principal principal;
+        try {
+            principal = authService.authenticate(name, password);
+        } catch (AuthService.AuthException ex) {
             return "redirect:/login?error=1";
         }
 
-        String hash = MD5Util.md5(password);
-
-        User user = userRepository.findByNameAndPwd(name, hash).orElse(null);
-        if (user == null) {
-            return "redirect:/login?error=1";
-        }
-
-        Principal principal = new Principal(user.getId(), user.getName(), user.getRole());
         session.setAttribute("principal", principal);
 
         if ("reserve".equals(redirect) && sid != null && date != null) {
-            return "redirect:/reserve?sid=" + sid + "&date=" + date;
+            return UriComponentsBuilder
+                    .fromPath("/reserve")
+                    .queryParam("sid", sid)
+                    .queryParam("date", date)
+                    .build()
+                    .toUriString();
         }
+
         return "redirect:/calendar";
     }
 
@@ -76,26 +76,14 @@ public class AuthController {
                            @RequestParam String confirm,
                            HttpSession session) {
 
-        if (name == null || password == null || confirm == null ||
-                name.isBlank() || password.isBlank() || confirm.isBlank()) {
-            return "redirect:/register?error=missing";
+        final Principal p;
+        try {
+            p = authService.register(name, password, confirm);
+        } catch (AuthService.AuthException ex) {
+            return "redirect:/register?error=" + ex.getCode();
         }
 
-        if (!password.equals(confirm)) {
-            return "redirect:/register?error=nomatch";
-        }
-
-        if (userRepository.existsByName(name)) {
-            return "redirect:/register?error=exists";
-        }
-
-        String hash = MD5Util.md5(password);
-        User user = new User(name, hash, "USER");
-        user = userRepository.save(user);
-
-        Principal p = new Principal(user.getId(), user.getName(), user.getRole());
         session.setAttribute("principal", p);
-
         return "redirect:/calendar";
     }
 
