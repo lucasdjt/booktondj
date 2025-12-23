@@ -4,15 +4,25 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name"),
+        @UniqueConstraint(columnNames = "email")
+    }
+)
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "uid")
     private Integer id;
+
     @Column(nullable = false, unique = true)
     private String name;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(name = "pwd", nullable = false)
     private String pwd;
@@ -25,8 +35,9 @@ public class User {
 
     public User() {}
 
-    public User(String name, String pwd, String role) {
+    public User(String name, String email, String pwd, String role) {
         this.name = name;
+        this.email = email;
         this.pwd = pwd;
         this.role = role;
     }
@@ -45,6 +56,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPwd() {
@@ -70,6 +89,4 @@ public class User {
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
     }
-
-    
 }

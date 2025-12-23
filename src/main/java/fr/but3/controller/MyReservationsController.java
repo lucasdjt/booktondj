@@ -3,6 +3,7 @@ package fr.but3.controller;
 import fr.but3.model.Principal;
 import fr.but3.model.Reservation;
 import fr.but3.repository.ReservationRepository;
+import fr.but3.service.ReservationService;
 import fr.but3.utils.Config;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -15,13 +16,17 @@ import java.util.List;
 public class MyReservationsController {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationService reservationService;
 
-    public MyReservationsController(ReservationRepository reservationRepository) {
+    public MyReservationsController(ReservationRepository reservationRepository,
+                                    ReservationService reservationService) {
         this.reservationRepository = reservationRepository;
+        this.reservationService = reservationService;
     }
 
     @GetMapping("/my-reservations")
     public String myReservations(HttpSession session, Model model) {
+
         Principal principal = (Principal) session.getAttribute("principal");
         if (principal == null) {
             return "redirect:/login?error=auth";
@@ -49,14 +54,11 @@ public class MyReservationsController {
             return "redirect:/my-reservations";
         }
 
-        reservationRepository.findById(id).ifPresent(r -> {
-            boolean canDelete = principal.isAdmin()
-                    || (r.getUser() != null && r.getUser().getId() != null
-                        && r.getUser().getId().intValue() == principal.getUserId());
-            if (canDelete) {
-                reservationRepository.delete(r);
-            }
-        });
+        try {
+            reservationService.cancelReservation(id, principal.getUserId(), principal.isAdmin());
+        } catch (ReservationService.ReservationException ex) {
+            return "redirect:/my-reservations?error=" + ex.getMessage();
+        }
 
         return "redirect:/my-reservations";
     }

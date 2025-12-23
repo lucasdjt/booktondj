@@ -20,12 +20,15 @@ public class AuthService {
     }
 
     private final UserRepository userRepository;
+    private final MailService mailService;
 
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, MailService mailService) {
         this.userRepository = userRepository;
+        this.mailService = mailService;
     }
 
     public Principal authenticate(String name, String password) {
+
         if (name == null || password == null || name.isBlank() || password.isBlank()) {
             throw new AuthException("missing");
         }
@@ -41,10 +44,10 @@ public class AuthService {
     }
 
     @Transactional
-    public Principal register(String name, String password, String confirm) {
+    public Principal register(String name, String email, String password, String confirm) {
 
-        if (name == null || password == null || confirm == null ||
-                name.isBlank() || password.isBlank() || confirm.isBlank()) {
+        if (name == null || email == null || password == null || confirm == null ||
+                name.isBlank() || email.isBlank() || password.isBlank() || confirm.isBlank()) {
             throw new AuthException("missing");
         }
 
@@ -52,12 +55,18 @@ public class AuthService {
             throw new AuthException("nomatch");
         }
 
-        if (userRepository.existsByName(name)) {
+        if (userRepository.existsByName(name) || userRepository.existsByEmail(email)) {
             throw new AuthException("exists");
         }
 
         String hash = MD5Util.md5(password);
-        User user = userRepository.save(new User(name, hash, "USER"));
+        User user = userRepository.save(new User(name, email, hash, "USER"));
+
+        mailService.sendSafe(
+                user.getEmail(),
+                "Bienvenue sur BookTonDJ",
+                "Bonjour " + user.getName() + ",\n\nVotre compte a bien été créé."
+        );
 
         return new Principal(user.getId(), user.getName(), user.getRole());
     }

@@ -72,19 +72,18 @@ public class AuthController {
 
     @PostMapping("/register")
     public String register(@RequestParam String name,
-                           @RequestParam String password,
-                           @RequestParam String confirm,
-                           HttpSession session) {
+                        @RequestParam String email,
+                        @RequestParam String password,
+                        @RequestParam String confirm,
+                        HttpSession session) {
 
-        final Principal p;
         try {
-            p = authService.register(name, password, confirm);
-        } catch (AuthService.AuthException ex) {
-            return "redirect:/register?error=" + ex.getCode();
+            Principal p = authService.register(name, email, password, confirm);
+            session.setAttribute("principal", p);
+            return "redirect:/calendar";
+        } catch (AuthService.AuthException e) {
+            return "redirect:/register?error=" + e.getCode();
         }
-
-        session.setAttribute("principal", p);
-        return "redirect:/calendar";
     }
 
     @RequestMapping(value = "/logout", method = {RequestMethod.GET, RequestMethod.POST})

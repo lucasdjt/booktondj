@@ -17,13 +17,16 @@
     <% } else if ("nomatch".equals(err)) { %>
             <div class="p-3 mb-4 bg-red-100 text-red-700 rounded">Les mots de passe ne correspondent pas.</div>
     <% } else if ("exists".equals(err)) { %>
-            <div class="p-3 mb-4 bg-red-100 text-red-700 rounded">Nom déjà utilisé.</div>
+            <div class="p-3 mb-4 bg-red-100 text-red-700 rounded">Nom ou email déjà utilisé.</div>
     <% } %>
 
     <form method="post">
 
         <label class="block">Nom d'utilisateur</label>
         <input name="name" class="w-full p-2 border rounded mb-4" required>
+
+        <label class="block">Email</label>
+        <input type="email" name="email" class="w-full p-2 border rounded mb-4" required>
 
         <label class="block">Mot de passe</label>
         <input type="password" name="password" class="w-full p-2 border rounded mb-4" required>

@@ -2,7 +2,7 @@
 
 <%
     String date = (String) request.getAttribute("date");
-    String sid  = (String) request.getAttribute("sid");
+    Integer sid  = (Integer) request.getAttribute("sid");
 
     String color1 = (String) request.getAttribute("planningColorPrimary");
 %>

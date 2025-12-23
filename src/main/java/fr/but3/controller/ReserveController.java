@@ -6,9 +6,7 @@ import fr.but3.utils.Config;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
@@ -49,13 +47,14 @@ public class ReserveController {
 
         Principal principal = (Principal) session.getAttribute("principal");
         if (principal == null) {
-            return UriComponentsBuilder
+            String loginUrl = UriComponentsBuilder
                     .fromPath("/login")
                     .queryParam("redirect", "reserve")
                     .queryParam("sid", sid)
                     .queryParam("date", date)
                     .build()
                     .toUriString();
+            return "redirect:" + loginUrl;
         }
 
         final LocalDate d;
@@ -67,19 +66,22 @@ public class ReserveController {
 
         try {
             reservationService.reserveSlot(sid, principal.getUserId(), d);
-        } catch (ReservationService.ReservationException ex) {
-            return UriComponentsBuilder
+        } catch (RuntimeException ex) {
+            String dayUrl = UriComponentsBuilder
                     .fromPath("/day")
                     .queryParam("date", date)
-                    .queryParam("error", ex.getCode())
+                    .queryParam("error", "reserve_failed")
                     .build()
                     .toUriString();
+            return "redirect:" + dayUrl;
         }
 
-        return UriComponentsBuilder
+        String okUrl = UriComponentsBuilder
                 .fromPath("/day")
                 .queryParam("date", date)
                 .build()
                 .toUriString();
+
+        return "redirect:" + okUrl;
     }
 }
