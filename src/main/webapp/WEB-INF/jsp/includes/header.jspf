@@ -31,7 +31,23 @@
 
         <% } else { %>
 
-            <span class="font-semibold">Bonjour <%= p.getUsername() %></span>
+            <%
+                String avatarUrl = null;
+                if (p.getProfileImage() != null && !p.getProfileImage().isBlank()) {
+                    avatarUrl = ctx + "/uploads/" + p.getProfileImage();
+                }
+            %>
+
+            <a href="<%= ctx %>/profile" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                    <% if (avatarUrl != null) { %>
+                        <img src="<%= avatarUrl %>" class="w-full h-full object-cover" alt="Avatar">
+                    <% } else { %>
+                        <span class="text-xs text-gray-500 font-semibold">N/A</span>
+                    <% } %>
+                </div>
+                <span class="font-semibold" style="color:<%= couleur2 %>">Bonjour <%= p.getUsername() %></span>
+            </a>
 
             <a href="<%= ctx %>/my-reservations" style="color:<%= couleur2 %>">Mes réservations</a>
             <a href="<%= ctx %>/logout" style="color:<%= couleur2 %>">Déconnexion</a>

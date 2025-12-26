@@ -40,7 +40,12 @@ public class AuthService {
             throw new AuthException("badcreds");
         }
 
-        return new Principal(user.getId(), user.getName(), user.getRole());
+        return new Principal(
+                user.getId(),
+                user.getName(),
+                user.getRole(),
+                user.getProfileImage()
+        );
     }
 
     @Transactional
@@ -68,6 +73,11 @@ public class AuthService {
                 "Bonjour " + user.getName() + ",\n\nVotre compte a bien été créé."
         );
 
-        return new Principal(user.getId(), user.getName(), user.getRole());
+        return new Principal(
+                user.getId(),
+                user.getName(),
+                user.getRole(),
+                user.getProfileImage()
+        );
     }
 }
