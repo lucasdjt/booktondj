@@ -46,4 +46,22 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     @Query("SELECT MIN(r.slot.date) FROM Reservation r")
     LocalDate findMinReservedDate();
+    
+    @Query("""
+        select r from Reservation r
+        join fetch r.slot s
+        join fetch r.user u
+        where s.date = :date
+        order by s.startTime, u.name
+    """)
+    List<Reservation> findAllForDateWithSlotAndUser(LocalDate date);
+
+    @Query("""
+        select r from Reservation r
+        join fetch r.slot s
+        join fetch r.user u
+        where u.id = :userId and s.date > :from
+        order by s.date, s.startTime
+    """)
+    List<Reservation> findFutureForUser(Integer userId, LocalDate from);
 }

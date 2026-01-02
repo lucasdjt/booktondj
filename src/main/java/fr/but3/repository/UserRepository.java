@@ -3,6 +3,7 @@ package fr.but3.repository;
 import fr.but3.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
@@ -12,4 +13,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByName(String name);
 
     boolean existsByEmail(String email);
+    
+    List<User> findAllByName(String name);
 }
