@@ -64,4 +64,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
         order by s.date, s.startTime
     """)
     List<Reservation> findFutureForUser(Integer userId, LocalDate from);
+        @Query("""
+        select r from Reservation r
+        join fetch r.slot s
+        join fetch r.user u
+        where u.id = :userId and s.date < :today
+        order by s.date, s.startTime
+    """)
+    List<Reservation> findPastByUserIdOrderBySlotDateAscSlotStartTimeAsc(Integer userId, LocalDate today);
+
+    @Query("""
+        select r from Reservation r
+        join fetch r.slot s
+        join fetch r.user u
+        where u.id = :userId and s.date >= :today
+        order by s.date, s.startTime
+    """)
+    List<Reservation> findFutureByUserIdOrderBySlotDateAscSlotStartTimeAsc(Integer userId, LocalDate today);
 }

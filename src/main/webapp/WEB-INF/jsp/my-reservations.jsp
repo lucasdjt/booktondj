@@ -8,6 +8,9 @@
     List<Reservation> reservations =
         (List<Reservation>) request.getAttribute("reservations");
 
+    String filter = (String) request.getAttribute("filter");
+    if (filter == null) filter = "all";
+
     String colorPri   = (String) request.getAttribute("planningColorPrimary");
     String colorSec   = (String) request.getAttribute("planningColorSecondary");
 
@@ -34,10 +37,36 @@
         Retour au calendrier
     </a>
 
+    <div class="flex gap-2 mt-2 mb-6">
+        <a href="my-reservations?filter=all"
+           class="px-3 py-2 rounded text-sm font-semibold border"
+           style="<%= "all".equals(filter) ? ("background:"+colorPri+";color:white;border-color:"+colorPri) : "" %>">
+            Toutes
+        </a>
+
+        <a href="my-reservations?filter=future"
+           class="px-3 py-2 rounded text-sm font-semibold border"
+           style="<%= "future".equals(filter) ? ("background:"+colorPri+";color:white;border-color:"+colorPri) : "" %>">
+            Futures
+        </a>
+
+        <a href="my-reservations?filter=past"
+           class="px-3 py-2 rounded text-sm font-semibold border"
+           style="<%= "past".equals(filter) ? ("background:"+colorPri+";color:white;border-color:"+colorPri) : "" %>">
+            Passées
+        </a>
+    </div>
+
+    <% if (request.getParameter("error") != null) { %>
+        <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">
+            Une erreur est survenue: <%= request.getParameter("error") %>
+        </div>
+    <% } %>
+
     <% if (reservations == null || reservations.isEmpty()) { %>
 
         <div class="mt-4 p-4 rounded bg-gray-100 text-gray-700">
-            Vous n'avez aucune réservation pour le moment.
+            Aucune réservation pour ce filtre.
         </div>
 
     <% } else { %>
@@ -69,6 +98,7 @@
                         <form method="post" action="my-reservations/delete"
                               onsubmit="return confirm('Annuler cette réservation ?');">
                             <input type="hidden" name="id" value="<%= r.getId() %>">
+                            <input type="hidden" name="filter" value="<%= filter %>">
                             <button class="px-3 py-1 text-white rounded text-sm"
                                     style="background:#ef4444;">
                                 Annuler

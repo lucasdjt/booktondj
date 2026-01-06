@@ -1,2 +1,41 @@
 INSERT INTO users(name, email, pwd, role) VALUES ('admin', 'dcinutile1@gmail.com', '21232f297a57a5a743894a0e4a801fc3', 'ADMIN');
 INSERT INTO users(name, email, pwd, role) VALUES ('test',  'dcinutile2@gmail.com', '098f6bcd4621d373cade4e832627b4f6', 'USER');
+
+-- TEST RESERVATIONS (PASSES FUTUR)
+
+-- INSERT INTO slots(slot_date, time_start, time_end, capacity)
+-- VALUES (DATEADD('DAY', -3, CURRENT_DATE), '10:00:00', '10:30:00', 10);
+-- INSERT INTO slots(slot_date, time_start, time_end, capacity)
+-- VALUES (DATEADD('DAY', -3, CURRENT_DATE), '11:00:00', '11:30:00', 10);
+-- INSERT INTO slots(slot_date, time_start, time_end, capacity)
+-- VALUES (DATEADD('DAY', 3, CURRENT_DATE), '10:00:00', '10:30:00', 10);
+-- INSERT INTO slots(slot_date, time_start, time_end, capacity)
+-- VALUES (DATEADD('DAY', 3, CURRENT_DATE), '11:00:00', '11:30:00', 10);
+-- INSERT INTO reservations(sid, uid, nb_personnes, created_at)
+-- VALUES (
+--   (SELECT sid FROM slots WHERE slot_date = DATEADD('DAY', -3, CURRENT_DATE) AND time_start = '10:00:00'),
+--   (SELECT uid FROM users WHERE name = 'test'),
+--   1,
+--   CURRENT_TIMESTAMP
+-- );
+-- INSERT INTO reservations(sid, uid, nb_personnes, created_at)
+-- VALUES (
+--   (SELECT sid FROM slots WHERE slot_date = DATEADD('DAY', -3, CURRENT_DATE) AND time_start = '11:00:00'),
+--   (SELECT uid FROM users WHERE name = 'test'),
+--   2,
+--   CURRENT_TIMESTAMP
+-- );
+-- INSERT INTO reservations(sid, uid, nb_personnes, created_at)
+-- VALUES (
+--   (SELECT sid FROM slots WHERE slot_date = DATEADD('DAY', 3, CURRENT_DATE) AND time_start = '10:00:00'),
+--   (SELECT uid FROM users WHERE name = 'test'),
+--   1,
+--   CURRENT_TIMESTAMP
+-- );
+-- INSERT INTO reservations(sid, uid, nb_personnes, created_at)
+-- VALUES (
+--   (SELECT sid FROM slots WHERE slot_date = DATEADD('DAY', 3, CURRENT_DATE) AND time_start = '11:00:00'),
+--   (SELECT uid FROM users WHERE name = 'test'),
+--   3,
+--   CURRENT_TIMESTAMP
+-- );
