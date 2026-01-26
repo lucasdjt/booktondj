@@ -16,7 +16,7 @@ public class MailTestController {
     @GetMapping("/test-mail")
     @ResponseBody
     public String testMail() {
-        mailService.sendSafe("dcinutile1@gmail.com", "Test BookTonDJ", "Hello!");
+        mailService.sendSafe("email@gmail.com", "Test BookTonDJ", "Hello!");
         return "OK (check logs + inbox/spam)";
     }
 }
