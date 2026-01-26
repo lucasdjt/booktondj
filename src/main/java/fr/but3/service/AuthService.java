@@ -69,7 +69,7 @@ public class AuthService {
 
         mailService.sendSafe(
                 user.getEmail(),
-                "Bienvenue sur BookTonDJ",
+                "Bienvenue sur BookTaPlace",
                 "Bonjour " + user.getName() + ",\n\nVotre compte a bien été créé."
         );
 

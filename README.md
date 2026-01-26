@@ -74,6 +74,7 @@ setx MAIL_PASSWORD "mdp(univlille)/mdp_application(gmail)"
 setx MAIL_EMAIL "mail"
 ```
 
+(Si vous voulez esquiver les emails, vous le pouvez en configurant juste les variables d'environnement sur des variables fausses tant qu'elles sont déclarées, l'envoi d'email sera pas disponible mais l'application fonctionnera)
 ---
 
 ## 3. Configuration du site (choix du contexte métier)
@@ -86,7 +87,7 @@ src/main/resources/config.properties
 
 Sélectionner **un seul fichier métier** parmi :
 
-* `medecin.properties`
+* `medecin.properties` (Avec ce properties, Vous pouvez décommenttez les commentaires dans data.sql pour avoir un jeux de donnée avec 50 réservations par 5 utilisateurs dans le site)
 * `coiffeur.properties`
 * `piscine.properties`
 * `salle.properties`

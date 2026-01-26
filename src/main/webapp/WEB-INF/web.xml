@@ -7,5 +7,5 @@
     <listener>
         <listener-class>fr.but3.listener.SlotInitializer</listener-class>
     </listener>
-    <display-name>BookTonDJ</display-name>
+    <display-name>BookTaPlace</display-name>
 </web-app>

@@ -67,7 +67,7 @@ public class ReservationService {
 
         reservationRepository.save(new Reservation(slot, user, 1));
 
-        String subject = "Confirmation de réservation - BookTonDJ";
+        String subject = "Confirmation de réservation - BookTaPlace";
         String body =
                 "Bonjour " + user.getName() + ",\n\n" +
                 "Votre réservation est confirmée.\n" +
@@ -97,7 +97,7 @@ public class ReservationService {
 
         reservationRepository.delete(r);
 
-        String subject = "Annulation de réservation - BookTonDJ";
+        String subject = "Annulation de réservation - BookTaPlace";
         String body =
                 "Bonjour " + user.getName() + ",\n\n" +
                 "Votre réservation a bien été annulée.\n" +

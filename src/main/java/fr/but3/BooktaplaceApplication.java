@@ -6,8 +6,8 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 
 @SpringBootApplication
 @ServletComponentScan(basePackages = "fr.but3")
-public class BooktondjApplication {
+public class BooktaplaceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(BooktondjApplication.class, args);
+        SpringApplication.run(BooktaplaceApplication.class, args);
     }
 }
